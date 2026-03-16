@@ -1,6 +1,8 @@
 // Generated on 2014-03-30 using generator-angular 0.8.0
 'use strict';
 
+const sass = require('sass');
+
 // # Globbing
 // for performance reasons we're only matching one level down:
 // 'test/spec/{,*/}*.js'
@@ -21,16 +23,12 @@ module.exports = function (grunt) {
         // Project settings
         yeoman: {
             // configurable paths
-            app: require('./bower.json').appPath || 'app',
+            app: 'app',
             dist: 'dist'
         },
 
         // Watches files for changes and runs tasks based on the changed files
         watch: {
-            bower: {
-                files: ['bower.json'],
-                tasks: ['bowerInstall']
-            },
             js: {
                 files: ['<%= yeoman.app %>/scripts/{,*/}*.js'],
                 tasks: ['newer:jshint:all'],
@@ -42,9 +40,9 @@ module.exports = function (grunt) {
                 files: ['test/spec/{,*/}*.js'],
                 tasks: ['newer:jshint:test', 'karma']
             },
-            compass: {
+            sass: {
                 files: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
-                tasks: ['compass:server', 'autoprefixer']
+                tasks: ['sass:server', 'autoprefixer']
             },
             gruntfile: {
                 files: ['Gruntfile.js', 'default_constants.json'],
@@ -74,6 +72,7 @@ module.exports = function (grunt) {
                 options: {
                     open: true,
                     base: [
+                        '.',
                         '.tmp',
                         '<%= yeoman.app %>'
                     ]
@@ -83,6 +82,7 @@ module.exports = function (grunt) {
                 options: {
                     port: 9001,
                     base: [
+                        '.',
                         '.tmp',
                         'test',
                         '<%= yeoman.app %>'
@@ -164,43 +164,30 @@ module.exports = function (grunt) {
             }
         },
 
-        // Automatically inject Bower components into the app
-        bowerInstall: {
-            app: {
-                src: ['<%= yeoman.app %>/index.html'],
-                ignorePath: '<%= yeoman.app %>/'
-            },
-            sass: {
-                src: ['<%= yeoman.app %>/styles/{,*/}*.{scss,sass}'],
-                ignorePath: '<%= yeoman.app %>/bower_components/'
-            }
-        },
-
-        // Compiles Sass to CSS and generates necessary files if requested
-        compass: {
+        // Compiles Sass to CSS using Dart Sass (replaces Compass)
+        sass: {
             options: {
-                sassDir: '<%= yeoman.app %>/styles',
-                cssDir: '.tmp/styles',
-                generatedImagesDir: '.tmp/images/generated',
-                imagesDir: '<%= yeoman.app %>/images',
-                javascriptsDir: '<%= yeoman.app %>/scripts',
-                fontsDir: '<%= yeoman.app %>/styles/fonts',
-                importPath: '<%= yeoman.app %>/bower_components',
-                httpImagesPath: '/images',
-                httpGeneratedImagesPath: '/images/generated',
-                httpFontsPath: '/styles/fonts',
-                relativeAssets: false,
-                assetCacheBuster: false,
-                raw: 'Sass::Script::Number.precision = 10\n'
-            },
-            dist: {
-                options: {
-                    generatedImagesDir: '<%= yeoman.dist %>/images/generated'
-                }
+                implementation: sass,
+                includePaths: ['node_modules'],
+                sourceMap: true,
+                precision: 10,
+                silenceDeprecations: ['legacy-js-api', 'import', 'color-functions', 'global-builtin', 'slash-div', 'if-function'],
+                quietDeps: true
             },
             server: {
                 options: {
-                    debugInfo: true
+                    sourceMap: true
+                },
+                files: {
+                    '.tmp/styles/wasabi.css': '<%= yeoman.app %>/styles/wasabi.scss'
+                }
+            },
+            dist: {
+                options: {
+                    sourceMap: false
+                },
+                files: {
+                    '.tmp/styles/wasabi.css': '<%= yeoman.app %>/styles/wasabi.scss'
                 }
             }
         },
@@ -328,9 +315,14 @@ module.exports = function (grunt) {
                             'images/*.png',
                             'images/*.gif',
                             'fonts/*',
-                            'plugins/{,*/}*',
-                            'bower_components/bootstrap-sass-official/vendor/assets/fonts/bootstrap/*.*'
+                            'plugins/{,*/}*'
                         ]
+                    },
+                    {
+                        expand: true,
+                        cwd: 'node_modules/bootstrap-sass/assets/fonts/bootstrap',
+                        dest: '<%= yeoman.dist %>/styles/fonts/bootstrap',
+                        src: ['*.*']
                     },
                     {
                         expand: true,
@@ -365,19 +357,25 @@ module.exports = function (grunt) {
                 cwd: '.tmp/styles',
                 dest: '<%= yeoman.dist %>/styles/',
                 src: 'branding.css'
+            },
+            bootstrapFonts: {
+                expand: true,
+                cwd: 'node_modules/bootstrap-sass/assets/fonts/bootstrap',
+                dest: '.tmp/styles/fonts/bootstrap',
+                src: ['*.*']
             }
         },
 
         // Run some tasks in parallel to speed up the build process
         concurrent: {
             server: [
-                'compass:server'
+                'sass:server'
             ],
             test: [
-                'compass'
+                'sass:dist'
             ],
             dist: [
-                'compass:dist',
+                'sass:dist',
                 'svgmin'
             ]
         },
@@ -508,7 +506,7 @@ module.exports = function (grunt) {
 
         grunt.task.run([
             'clean:server',
-            'bowerInstall',
+            'copy:bootstrapFonts',
             'concurrent:server',
             'ngconstant:development',
             'autoprefixer',
@@ -524,7 +522,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test', [
         'clean:server',
-        'compass',
+        'copy:bootstrapFonts',
+        'sass:dist',
         'ngconstant:test',
         'connect:test',
         'karma'
@@ -550,7 +549,6 @@ module.exports = function (grunt) {
     grunt.registerTask('build', [
         'clean:dist',
         'config:dist',
-        'bowerInstall',
         'useminPrepare',
         'concurrent:dist',
         'autoprefixer',

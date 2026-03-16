@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###############################################################################
-from centos
+# Modern Java 8 JRE base (Eclipse Temurin); no deprecated Oracle JDK.
+FROM eclipse-temurin:8-jre
 
 ENV WASABI_MODULE wasabi-main
 ENV WASABI_UI_MODULE wasabi-ui-main
@@ -25,18 +26,10 @@ ENV WASABI_SRC_DIR ${application.name}
 ENV WASABI_HOME /usr/local/${application.name}
 
 ENV WASABI_JAVA_OPTIONS ""
-ENV JDK_MAJOR_VERSION 8u131
-ENV JDK_MINOR_VERSION b11
-ENV JDK_VERSION ${JDK_MAJOR_VERSION}-${JDK_MINOR_VERSION}
-
-RUN yum -y update && yum install -y wget
-
-RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/${JDK_VERSION}/d54c1d3a095b4ff2b6607d096fa80163/jdk-${JDK_MAJOR_VERSION}-linux-x64.rpm \
-	&& rpm -ivh jdk-${JDK_MAJOR_VERSION}-linux-x64.rpm && rm jdk-${JDK_MAJOR_VERSION}-linux-x64.rpm
 
 COPY ./ ${WASABI_HOME}/
 COPY entrypoint.sh /usr/local/bin/
-RUN sed -i -e $'s/1>>.*2>&1//' ${WASABI_HOME}/bin/run 2>/dev/null;
+RUN sed -i -e $'s/1>>.*2>&1//' ${WASABI_HOME}/bin/run 2>/dev/null || true
 
 EXPOSE ${WASABI_PORT}
 EXPOSE ${WASABI_JMX_PORT}

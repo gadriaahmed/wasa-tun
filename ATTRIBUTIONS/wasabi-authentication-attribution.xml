@@ -1816,10 +1816,9 @@
          </downloadUrls>
       </dependency>
       <dependency>
-         <name>Project Lombok</name>
          <groupId>org.projectlombok</groupId>
-         <artifactId>lombok</artifactId>
-         <version>1.16.10</version>
+    <artifactId>lombok</artifactId>
+    <version>1.18.30</version>
          <projectUrl>https://projectlombok.org</projectUrl>
          <type>jar</type>
          <licenses>

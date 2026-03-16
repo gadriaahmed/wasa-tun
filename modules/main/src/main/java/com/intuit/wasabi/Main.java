@@ -30,7 +30,7 @@ import static java.util.TimeZone.getTimeZone;
 import static org.joda.time.DateTimeZone.UTC;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class Main {
+public class  Main {
 
     private static final Logger LOGGER = getLogger(MetricsModule.class);
 

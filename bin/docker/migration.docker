@@ -1,4 +1,4 @@
-FROM openjdk:jre-alpine
+FROM eclipse-temurin:8-jre-alpine
 
 
 ADD https://oss.sonatype.org/content/repositories/public/com/builtamont/cassandra-migration/0.9/cassandra-migration-0.9-jar-with-dependencies.jar /wasabi/cassandra-migration.jar
