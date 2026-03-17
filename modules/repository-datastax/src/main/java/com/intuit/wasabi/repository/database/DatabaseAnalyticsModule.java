@@ -16,7 +16,7 @@
 package com.intuit.wasabi.repository.database;
 
 import com.google.inject.AbstractModule;
-import com.googlecode.flyway.core.Flyway;
+import org.flywaydb.core.Flyway;
 import com.intuit.wasabi.repository.AnalyticsRepository;
 import org.slf4j.Logger;
 

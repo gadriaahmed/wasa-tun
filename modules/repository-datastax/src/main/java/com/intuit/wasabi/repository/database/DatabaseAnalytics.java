@@ -16,7 +16,7 @@
 package com.intuit.wasabi.repository.database;
 
 import com.google.inject.Inject;
-import com.googlecode.flyway.core.Flyway;
+import org.flywaydb.core.Flyway;
 import com.intuit.wasabi.analyticsobjects.Event;
 import com.intuit.wasabi.analyticsobjects.Parameters;
 import com.intuit.wasabi.analyticsobjects.counts.ActionCounts;

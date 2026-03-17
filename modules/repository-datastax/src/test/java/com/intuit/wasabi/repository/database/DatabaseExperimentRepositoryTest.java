@@ -16,7 +16,7 @@
 package com.intuit.wasabi.repository.database;
 
 import com.googlecode.catchexception.apis.BDDCatchException;
-import com.googlecode.flyway.core.Flyway;
+import org.flywaydb.core.Flyway;
 import com.intuit.wasabi.database.Transaction;
 import com.intuit.wasabi.database.TransactionFactory;
 import com.intuit.wasabi.exceptions.BucketNotFoundException;

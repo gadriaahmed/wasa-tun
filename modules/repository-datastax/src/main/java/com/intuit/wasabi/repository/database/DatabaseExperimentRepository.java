@@ -19,7 +19,7 @@ import com.datastax.driver.core.Statement;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
-import com.googlecode.flyway.core.Flyway;
+import org.flywaydb.core.Flyway;
 import com.intuit.wasabi.database.Transaction;
 import com.intuit.wasabi.database.TransactionFactory;
 import com.intuit.wasabi.exceptions.BucketNotFoundException;
@@ -70,6 +70,7 @@ public class DatabaseExperimentRepository implements ExperimentRepository {
     private void initialize(Flyway flyway) {
         flyway.setLocations("com/intuit/wasabi/repository/impl/mysql/migration");
         flyway.setDataSource(transactionFactory.getDataSource());
+        flyway.repair();
         flyway.migrate();
     }
 

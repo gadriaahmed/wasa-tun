@@ -15,7 +15,7 @@
  *******************************************************************************/
 package com.intuit.wasabi.repository.database;
 
-import com.googlecode.flyway.core.Flyway;
+import org.flywaydb.core.Flyway;
 import com.intuit.wasabi.authenticationobjects.UserInfo;
 import com.intuit.wasabi.database.Transaction;
 import com.intuit.wasabi.database.TransactionFactory;

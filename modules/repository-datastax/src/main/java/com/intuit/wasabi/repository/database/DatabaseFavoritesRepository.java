@@ -17,7 +17,7 @@ package com.intuit.wasabi.repository.database;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.googlecode.flyway.core.Flyway;
+import org.flywaydb.core.Flyway;
 import com.intuit.wasabi.authenticationobjects.UserInfo;
 import com.intuit.wasabi.database.TransactionFactory;
 import com.intuit.wasabi.exceptions.DatabaseException;

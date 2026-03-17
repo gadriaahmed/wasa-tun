@@ -1,0 +1,9 @@
+-- flyway:nonTransactional
+
+CREATE TRIGGER on_delete_experiment_rollup BEFORE DELETE ON experiment FOR EACH ROW DELETE FROM experiment_rollup WHERE experiment_id=OLD.id;
+
+CREATE TRIGGER on_delete_event_impression BEFORE DELETE ON experiment FOR EACH ROW DELETE FROM event_impression WHERE experiment_id=OLD.id;
+
+CREATE TRIGGER on_delete_event_action BEFORE DELETE ON experiment FOR EACH ROW DELETE FROM event_action WHERE experiment_id=OLD.id;
+
+CREATE TRIGGER on_delete_bucket BEFORE DELETE ON experiment FOR EACH ROW DELETE FROM bucket WHERE experiment_id=OLD.id;

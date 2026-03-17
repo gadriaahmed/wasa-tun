@@ -424,6 +424,97 @@ var WASABI = (function (wasabi) {
         });
     };
 
+    function autoInit() {
+        if (typeof document === 'undefined') {
+            return;
+        }
+
+        var options = wasabi.getOptions ? wasabi.getOptions() : wasabi.wasabiOptions || {};
+
+        // Variant containers
+        var experimentNodes = document.querySelectorAll('[data-wasabi-experiment]');
+        Array.prototype.forEach.call(experimentNodes, function (node) {
+            var experimentName = node.getAttribute('data-wasabi-experiment');
+            if (!experimentName) {
+                return;
+            }
+
+            wasabi.getAssignment({
+                experimentName: experimentName
+            }).then(function (response) {
+                var assignment = response && response.assignment;
+                if (!assignment) {
+                    // Fallback: show all variants
+                    var allChildren = node.querySelectorAll('[data-wasabi-variant]');
+                    Array.prototype.forEach.call(allChildren, function (child) {
+                        if (child.classList) {
+                            child.classList.remove('wasabi-hidden');
+                        }
+                    });
+                    return;
+                }
+
+                var bucketLabel = assignment.bucketLabel;
+                var variants = node.querySelectorAll('[data-wasabi-variant]');
+                Array.prototype.forEach.call(variants, function (child) {
+                    var variantName = child.getAttribute('data-wasabi-variant');
+                    if (variantName === bucketLabel) {
+                        if (child.classList) {
+                            child.classList.remove('wasabi-hidden');
+                        }
+                    } else {
+                        if (child.classList) {
+                            child.classList.add('wasabi-hidden');
+                        }
+                    }
+                });
+
+                wasabi.postImpression({
+                    experimentName: experimentName
+                });
+            }).catch(function () {
+                var children = node.querySelectorAll('[data-wasabi-variant]');
+                Array.prototype.forEach.call(children, function (child) {
+                    if (child.classList) {
+                        child.classList.remove('wasabi-hidden');
+                    }
+                });
+            });
+        });
+
+        // Tracking elements
+        var trackNodes = document.querySelectorAll('[data-wasabi-track]');
+        Array.prototype.forEach.call(trackNodes, function (el) {
+            var spec = el.getAttribute('data-wasabi-track');
+            if (!spec) {
+                return;
+            }
+            // Format: Experiment:Event
+            var parts = spec.split(':');
+            if (parts.length !== 2) {
+                return;
+            }
+            var expName = parts[0];
+            var evtName = parts[1];
+
+            el.addEventListener('click', function () {
+                wasabi.postAction(evtName, null, {
+                    experimentName: expName
+                });
+            });
+        });
+    }
+
+    wasabi.autoInit = autoInit;
+
+    if (typeof document !== 'undefined' && document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', function () {
+            if (wasabi.wasabiOptions && wasabi.wasabiOptions.applicationName) {
+                autoInit();
+            }
+        });
+    }
+
     return wasabi;
 
 }(WASABI || {}));

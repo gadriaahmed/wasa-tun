@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProBook X1 — The Professional Laptop</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1a1a2e; }
+
+    /* Hide all variants by default - SDK will show correct one */
+    .wasabi-hidden { display: none !important; }
+    .promo-banner {
+      background: linear-gradient(90deg, #f59e0b, #fbbf24);
+      color: #1a1a00;
+      text-align: center;
+      padding: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Nav */
+    nav {
+      background: white;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .nav-logo { font-size: 20px; font-weight: 800; color: #2563eb; letter-spacing: -0.5px; }
+    .nav-links { display: flex; gap: 24px; list-style: none; }
+    .nav-links a { text-decoration: none; color: #555; font-size: 14px; }
+    .nav-links a:hover { color: #2563eb; }
+    .nav-cart { background: #2563eb; color: white; border: none; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 50%, #2563eb 100%);
+      color: white;
+      padding: 80px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 60px;
+      flex-wrap: wrap;
+    }
+    .hero-content { max-width: 520px; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* Headline experiment */
+    #hero-headline [data-wasabi-variant] h1 {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      letter-spacing: -1px;
+    }
+
+    .hero-sub {
+      font-size: 17px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .hero-price {
+      font-size: 36px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .hero-price span { font-size: 16px; font-weight: 400; opacity: 0.7; text-decoration: line-through; margin-left: 8px; }
+    .hero-rating { font-size: 14px; opacity: 0.8; margin-bottom: 24px; }
+
+    /* Buy button experiment */
+    #buy-button-exp [data-wasabi-variant] button {
+      padding: 16px 36px;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      width: 100%;
+      max-width: 320px;
+    }
+    #buy-button-exp [data-wasabi-variant] button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+    #buy-button-exp [data-wasabi-variant="control"] button {
+      background: white;
+      color: #2563eb;
+    }
+    #buy-button-exp [data-wasabi-variant="treatment"] button {
+      background: #16a34a;
+      color: white;
+    }
+
+    .hero-guarantee { font-size: 13px; opacity: 0.65; margin-top: 12px; }
+
+    /* Hero image */
+    .hero-image {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      width: 380px;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 80px;
+      flex-shrink: 0;
+    }
+
+    /* Features */
+    .features {
+      padding: 60px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .features h2 { text-align: center; font-size: 28px; margin-bottom: 8px; }
+    .features-sub { text-align: center; color: #666; margin-bottom: 40px; font-size: 15px; }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .feature-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border: 1px solid #e5e7eb;
+    }
+    .feature-icon { font-size: 32px; margin-bottom: 12px; }
+    .feature-card h3 { font-size: 16px; margin-bottom: 6px; }
+    .feature-card p { font-size: 14px; color: #666; line-height: 1.5; }
+
+    /* Specs */
+    .specs {
+      background: white;
+      padding: 60px 40px;
+      border-top: 1px solid #e5e7eb;
+    }
+    .specs-inner { max-width: 700px; margin: 0 auto; }
+    .specs h2 { font-size: 26px; margin-bottom: 24px; }
+    .specs-table { width: 100%; border-collapse: collapse; }
+    .specs-table tr { border-bottom: 1px solid #f0f0f0; }
+    .specs-table td { padding: 12px 0; font-size: 14px; }
+    .specs-table td:first-child { color: #888; width: 40%; }
+    .specs-table td:last-child { font-weight: 500; }
+
+    /* Reviews */
+    .reviews {
+      padding: 60px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .reviews h2 { font-size: 26px; margin-bottom: 24px; }
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+    .review-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+    }
+    .review-stars { color: #f59e0b; margin-bottom: 8px; }
+    .review-text { font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 12px; }
+    .review-author { font-size: 13px; color: #888; }
+
+    /* Footer */
+    footer {
+      background: #1a1a2e;
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+    }
+
+    /* Debug Panel */
+    #debug-panel {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: monospace;
+      font-size: 12px;
+      max-width: 280px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 9999;
+      border: 1px solid #333;
+    }
+    #debug-panel h4 { color: #60a5fa; margin-bottom: 10px; font-size: 12px; letter-spacing: 1px; }
+    .debug-row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+    .debug-key { color: #9ca3af; }
+    .debug-val { color: #34d399; font-weight: bold; }
+    .debug-uid { color: #fbbf24; font-size: 10px; margin-top: 8px; word-break: break-all; border-top: 1px solid #333; padding-top: 8px; }
+    #debug-toggle { position: fixed; bottom: 20px; right: 20px; background: #2563eb; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 18px; z-index: 10000; display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Experiment: BannerOffer -->
+  <div id="banner-offer" data-wasabi-experiment="BannerOffer">
+    <div data-wasabi-variant="control" class="wasabi-hidden"></div>
+    <div data-wasabi-variant="treatment" class="wasabi-hidden">
+      <div class="promo-banner">🎉 Limited Time: 20% OFF Today Only! Use code <strong>PROBOOK20</strong></div>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="nav-logo">TechStore</div>
+    <ul class="nav-links">
+      <li><a href="#">Laptops</a></li>
+      <li><a href="#">Accessories</a></li>
+      <li><a href="#">Support</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <button class="nav-cart">🛒 Cart (0)</button>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">✨ New 2026 Model</div>
+
+      <!-- Experiment: HeroHeadline -->
+      <div id="hero-headline" data-wasabi-experiment="HeroHeadline">
+        <div data-wasabi-variant="control" class="wasabi-hidden">
+          <h1>The Laptop Built for Professionals</h1>
+        </div>
+        <div data-wasabi-variant="treatment" class="wasabi-hidden">
+          <h1>Supercharge Your Work with ProBook X1</h1>
+        </div>
+      </div>
+
+      <p class="hero-sub">Intel Core i9 · 32GB RAM · 1TB NVMe SSD · 4K OLED Display.<br/>Built to handle anything you throw at it.</p>
+      <div class="hero-price">$1,299 <span>$1,699</span></div>
+      <div class="hero-rating">⭐⭐⭐⭐⭐ 4.9/5 · 2,341 reviews</div>
+
+      <!-- Experiment: BuyButton -->
+      <div id="buy-button-exp" data-wasabi-experiment="BuyButton">
+        <div data-wasabi-variant="control" class="wasabi-hidden">
+          <button data-wasabi-track="BuyButton:BuyClicked">Add to Cart</button>
+        </div>
+        <div data-wasabi-variant="treatment" class="wasabi-hidden">
+          <button data-wasabi-track="BuyButton:BuyClicked">Buy Now — Free Shipping! 🚀</button>
+        </div>
+      </div>
+
+      <p class="hero-guarantee">🔒 30-day money back guarantee · Free returns</p>
+    </div>
+
+    <div class="hero-image">💻</div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <h2>Everything You Need. Nothing You Don't.</h2>
+    <p class="features-sub">Engineered for performance, designed for humans.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Blazing Fast</h3>
+        <p>Intel Core i9 processor with 32GB RAM. Opens 50 tabs without breaking a sweat.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <h3>Stunning Display</h3>
+        <p>4K OLED touchscreen with 120Hz refresh rate and 100% DCI-P3 color coverage.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔋</div>
+        <h3>All-Day Battery</h3>
+        <p>Up to 18 hours on a single charge. From morning standup to late-night deadline.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Enterprise Security</h3>
+        <p>Fingerprint reader, IR face unlock, and hardware TPM 2.0 chip built in.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Specs -->
+  <section class="specs">
+    <div class="specs-inner">
+      <h2>Technical Specifications</h2>
+      <table class="specs-table">
+        <tr><td>Processor</td><td>Intel Core i9-13900H (24 cores)</td></tr>
+        <tr><td>Memory</td><td>32GB LPDDR5 5200MHz</td></tr>
+        <tr><td>Storage</td><td>1TB PCIe Gen 4 NVMe SSD</td></tr>
+        <tr><td>Display</td><td>14" 4K OLED, 120Hz, 400 nits</td></tr>
+        <tr><td>Graphics</td><td>Intel Iris Xe + NVIDIA RTX 3050</td></tr>
+        <tr><td>Battery</td><td>86Wh, up to 18 hours</td></tr>
+        <tr><td>Ports</td><td>2× Thunderbolt 4, 2× USB-A, HDMI 2.1, SD</td></tr>
+        <tr><td>Weight</td><td>1.38 kg (3.04 lbs)</td></tr>
+        <tr><td>OS</td><td>Windows 11 Pro</td></tr>
+        <tr><td>Warranty</td><td>3 years on-site service</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section class="reviews">
+    <h2>What Our Customers Say</h2>
+    <div class="reviews-grid">
+      <div class="review-card">
+        <div class="review-stars">⭐⭐⭐⭐⭐</div>
+        <p class="review-text">"Best laptop I've ever owned. The display is absolutely gorgeous and battery life is no joke — I got 16 hours on a real workday."</p>
+        <div class="review-author">— Sarah M., Software Engineer</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">⭐⭐⭐⭐⭐</div>
+        <p class="review-text">"Replaced my MacBook Pro with this. Zero regrets. Faster, lighter, and the keyboard is a dream to type on all day."</p>
+        <div class="review-author">— James K., Product Designer</div>
+      </div>
+      <div class="review-card">
+        <div class="review-stars">⭐⭐⭐⭐⭐</div>
+        <p class="review-text">"Our entire team switched to ProBook X1. IT loves the security features, developers love the performance. Win-win."</p>
+        <div class="review-author">— Linda R., CTO at Finstack</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    © 2026 TechStore Inc. · Privacy Policy · Terms of Service
+  </footer>
+
+  <!-- Debug Panel -->
+  <div id="debug-panel">
+    <h4>🧪 WASABI DEBUG</h4>
+    <div class="debug-row"><span class="debug-key">HeroHeadline</span><span class="debug-val" id="dbg-headline">—</span></div>
+    <div class="debug-row"><span class="debug-key">BuyButton</span><span class="debug-val" id="dbg-buy">—</span></div>
+    <div class="debug-row"><span class="debug-key">BannerOffer</span><span class="debug-val" id="dbg-banner">—</span></div>
+    <div class="debug-uid" id="dbg-uid">uid: —</div>
+  </div>
+
+  <script src="/scripts/wasabi.js"></script>
+  <script>
+    WASABI.setOptions({
+      applicationName: 'TestApp',
+      protocol: 'http',
+      host: 'localhost:8080'
+    });
+
+    var debugMap = {
+      'HeroHeadline': 'dbg-headline',
+      'BuyButton': 'dbg-buy',
+      'BannerOffer': 'dbg-banner'
+    };
+
+    function runExperiment(expName) {
+      WASABI.getAssignment({ experimentName: expName })
+        .then(function(response) {
+          var bucket = response && response.assignment;
+          var container = document.querySelector('[data-wasabi-experiment="' + expName + '"]');
+          if (!container) return;
+
+          var variants = container.querySelectorAll('[data-wasabi-variant]');
+
+          if (!bucket) {
+            // No assignment - show all as fallback
+            Array.prototype.forEach.call(variants, function(v) {
+              v.classList.remove('wasabi-hidden');
+            });
+            return;
+          }
+
+          // Show matching variant only
+          Array.prototype.forEach.call(variants, function(v) {
+            if (v.getAttribute('data-wasabi-variant') === bucket) {
+              v.classList.remove('wasabi-hidden');
+            } else {
+              v.classList.add('wasabi-hidden');
+            }
+          });
+
+          // Auto impression
+          WASABI.postImpression({ experimentName: expName }).catch(function(){});
+
+          // Update debug panel
+          var dbgEl = document.getElementById(debugMap[expName]);
+          if (dbgEl) dbgEl.textContent = bucket;
+        })
+        .catch(function() {
+          // On error show all variants
+          var container = document.querySelector('[data-wasabi-experiment="' + expName + '"]');
+          if (!container) return;
+          var variants = container.querySelectorAll('[data-wasabi-variant]');
+          Array.prototype.forEach.call(variants, function(v) {
+            v.style.display = '';
+          });
+        });
+    }
+
+    function init() {
+      // Update userId in debug panel
+      var uid = document.cookie.split('; ').find(function(r) {
+        return r.startsWith('wasabi_uid=');
+      });
+      if (uid) {
+        var uidEl = document.getElementById('dbg-uid');
+        if (uidEl) uidEl.textContent = 'uid: ' + decodeURIComponent(uid.split('=')[1]).substring(0, 24) + '...';
+      }
+
+      // Run all experiments
+      ['BannerOffer', 'HeroHeadline', 'BuyButton'].forEach(runExperiment);
+
+      // Wire up click tracking
+      document.querySelectorAll('[data-wasabi-track]').forEach(function(el) {
+        var spec = el.getAttribute('data-wasabi-track');
+        if (!spec) return;
+        var parts = spec.split(':');
+        if (parts.length !== 2) return;
+        el.addEventListener('click', function() {
+          WASABI.postAction(parts[1], null, { experimentName: parts[0] }).catch(function(){});
+        });
+      });
+    }
+
+    // Run after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
