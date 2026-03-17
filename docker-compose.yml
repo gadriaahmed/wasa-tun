@@ -1,16 +1,23 @@
 # Run Wasabi locally with Cassandra and MySQL.
-# Prerequisite: build the app once so the wasabi image can be built:
-#   ./bin/build.sh -b true -p development
-# Then: docker compose up -d
+#
+# Quick start:
+#   ./dev.sh start-db   → starts cassandra + mysql
+#   ./dev.sh migrate    → runs keyspace + schema migrations
+#   ./dev.sh backend    → starts Java backend
+#   ./dev.sh frontend   → starts Angular UI
 
 services:
+
   cassandra:
     image: cassandra:4.1
     container_name: wasabi-cassandra
     ports:
       - "9042:9042"
       - "9160:9160"
-    # Give Cassandra time to start before init runs
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    networks:
+      - wasabi-net
     healthcheck:
       test: ["CMD-SHELL", "cqlsh -e 'describe cluster' || true"]
       interval: 10s
@@ -29,6 +36,10 @@ services:
       MYSQL_PASSWORD: readwrite
     ports:
       - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - wasabi-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmypass"]
       interval: 5s
@@ -46,6 +57,8 @@ services:
       CASSANDRA_KEYSPACE_PREFIX: wasabi
       CQLSH_HOST: cassandra
       CASSANDRA_PORT: "9042"
+    networks:
+      - wasabi-net
     depends_on:
       cassandra:
         condition: service_healthy
@@ -61,27 +74,43 @@ services:
       CQLSH_HOST: cassandra
       CASSANDRA_PORT: "9042"
       CASSANDRA_KEYSPACE: wasabi_experiments
+    networks:
+      - wasabi-net
     depends_on:
       wasabi-keyspace:
         condition: service_completed_successfully
     restart: "no"
 
-#  wasabi:
-#    build:
-#      context: ./modules/main/target/${WASABI_APP_ID}
-#      dockerfile: Dockerfile
-#    image: wasabi-main:latest
-#    container_name: wasabi-main
-#    environment:
-#      WASABI_CONFIGURATION: "-Dcassandra.experiments.nodeHosts=cassandra -Dcassandra.events.nodeHosts=cassandra -Ddatabase.url.host=mysql"
-#    ports:
-#      - "8080:8080"
-#      - "8090:8090"
-#      - "8180:8180"
-#    depends_on:
-#      cassandra:
-#        condition: service_healthy
-#      mysql:
-#        condition: service_healthy
-#      wasabi-migration:
-#        condition: service_completed_successfully
+  # Uncomment when ready to run backend in Docker
+  # wasabi:
+  #   build:
+  #     context: ./modules/main/target/${WASABI_APP_ID}
+  #     dockerfile: Dockerfile
+  #   image: wasabi-main:latest
+  #   container_name: wasabi-main
+  #   environment:
+  #     WASABI_CONFIGURATION: >-
+  #       -Dcassandra.experiments.nodeHosts=cassandra
+  #       -Dcassandra.events.nodeHosts=cassandra
+  #       -Ddatabase.url.host=mysql
+  #   ports:
+  #     - "8080:8080"
+  #     - "8090:8090"
+  #     - "8180:8180"
+  #   networks:
+  #     - wasabi-net
+  #   depends_on:
+  #     cassandra:
+  #       condition: service_healthy
+  #     mysql:
+  #       condition: service_healthy
+  #     wasabi-migration:
+  #       condition: service_completed_successfully
+
+volumes:
+  cassandra-data:
+  mysql-data:
+
+networks:
+  wasabi-net:
+    driver: bridge
