@@ -1,0 +1,61 @@
+---
+description: Base project conventions for Wasabi stack, structure, naming, and coding patterns
+alwaysApply: true
+---
+
+# Wasabi Base Conventions
+
+## Tech Stack
+- Backend is Java 8 with Maven multi-module builds (`pom.xml` root + `modules/*/pom.xml`).
+- DI and service wiring use Guice and Autumn service modules.
+- HTTP APIs use JAX-RS annotations (`@Path`, `@GET`, `@POST`) and Swagger annotations.
+- Persistence targets MySQL and Cassandra (DataStax); many flows are repository-driven.
+- Legacy frontend in `modules/ui` is AngularJS 1.x + Grunt + Karma/Jasmine.
+- New frontend in `modules/ui-react` is React 18 + TypeScript + Vite + React Router + React Query + Tailwind CSS (with shadcn/ui-style components).
+
+## Repository Structure
+- Keep backend code in `modules/<domain>/src/main/java/com/intuit/wasabi/...`.
+- Keep backend tests in `modules/<domain>/src/test/java/...` (or `integration-test/test/java` where already used).
+- Keep UI app code under `modules/ui/app/`:
+  - `scripts/controllers/*Ctrl.js`
+  - `scripts/services/*Factory.js`
+  - `scripts/directives/*.js`
+  - `views/*.html`
+- Keep React UI code under `modules/ui-react/src/`:
+  - `pages/*.tsx` route-level screens
+  - `components/layout/*.tsx` app chrome/layout
+  - `components/ui/*.tsx` reusable primitive UI components
+  - `api/*.ts` HTTP client wrappers
+  - `types/*.ts` shared frontend types
+  - `lib/*.ts` shared utilities
+- Treat `contrib/` as examples/integrations; avoid coupling core backend logic to it.
+
+## Naming Conventions
+- Java packages stay under `com.intuit.wasabi.<module>`.
+- Java classes use PascalCase; prefer role-revealing suffixes already present:
+  - API resources: `*Resource`
+  - Guice modules: `*Module`
+  - repository implementations: `*Repository`, `Cassandra*Repository`
+  - exceptions: `*Exception`
+  - tests: unit `*Test`, integration `*IT`
+- AngularJS controllers use `*Ctrl` names and register with `.controller('NameCtrl', ...)`.
+- AngularJS service factories use `*Factory` naming and `.factory('NameFactory', ...)`.
+- React components/pages use PascalCase filenames and named exports where practical (`Login`, `Experiments`, `Layout`).
+- Use path aliases from `modules/ui-react/components.json` (`@/components`, `@/lib`, `@/api`, `@/types`) instead of deep relative imports.
+
+## Coding Patterns to Follow
+- Prefer constructor injection (`@Inject`) for backend services/components.
+- Keep API methods thin: authorize, parse/validate inputs, delegate to domain services, return response.
+- Preserve explicit try/catch logging pattern around API endpoints when touching existing resources.
+- Reuse existing domain value types (`Experiment.ID`, `Application.Name`, `Context`, etc.) rather than raw strings.
+- Prefer existing helpers over ad-hoc duplication (Java services and UI utility/factory patterns).
+- Maintain behavior first in legacy code; avoid broad refactors unless requested.
+- For React data fetching, follow existing React Query + axios client pattern (`apiClient` + `useQuery`/`refetch`) instead of manual duplicated fetch logic.
+- Keep auth/token access in one place (`apiClient` interceptor + route guards) and avoid scattering storage/headers logic.
+
+## Style and Safety
+- Match file-local formatting and idioms; do not force modern rewrites in legacy AngularJS or Java files.
+- Keep public API behavior and endpoint contracts backward compatible unless explicitly asked otherwise.
+- Add or update tests alongside behavior changes in the corresponding module.
+- For UI JavaScript in `modules/ui`, preserve 2-space indentation and existing AngularJS style.
+- For `modules/ui-react`, prefer TypeScript strictness, functional components/hooks, and existing ESLint rules (`eslint.config.js`).
