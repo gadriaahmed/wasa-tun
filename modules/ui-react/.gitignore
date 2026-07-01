@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Accidental tsc output in src/ (must not shadow .tsx sources)
+src/**/*.js
+src/**/*.js.map

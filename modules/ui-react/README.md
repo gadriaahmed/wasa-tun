@@ -1,50 +1,95 @@
-# React + TypeScript + Vite
+# Wasabi React UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modern admin console for Wasabi A/B testing, replacing the frozen AngularJS UI in [`modules/ui/`](../ui/).
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 18 + TypeScript + Vite 5
+- Tailwind CSS 4 + shadcn/ui v4 (radix-nova)
+- React Router v7, TanStack Query v5, TanStack Table
+- React Hook Form + Zod, Recharts, date-fns, sonner
 
-## Expanding the ESLint configuration
+## Development
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+**Prerequisites:** Node 18+, running Wasabi backend on `:8080`.
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+cd modules/ui-react
+npm install
+cp .env.example .env
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+Open http://localhost:3000 — Vite proxies `/api/v1` to the backend.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Production build (separate static host)
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+npm run build
 ```
+
+Deploy the `dist/` folder to your static host (S3, nginx, Netlify, etc.).
+
+Set at build time:
+
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Wasabi API origin, e.g. `https://wasabi.example.com` |
+| `VITE_AUTHN_TYPE` | `basic` (default) or `sso` |
+| `VITE_SSO_NO_AUTH_REDIRECT` | SSO login redirect URL |
+| `VITE_SSO_LOGOUT_REDIRECT` | SSO logout redirect URL |
+
+### Backend CORS
+
+Enable CORS on the Wasabi API for your React origin:
+
+```
+Access-Control-Allow-Origin: https://ui.example.com
+Access-Control-Allow-Headers: Authorization, Content-Type
+Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+```
+
+## Testing
+
+```bash
+npm test          # Vitest unit/integration tests
+npm run lint      # ESLint
+```
+
+## Project structure
+
+```
+src/
+├── api/           # Domain API modules (axios client + endpoints)
+├── components/    # UI primitives + domain components
+├── contexts/      # AuthContext
+├── hooks/         # React Query hooks
+├── pages/         # Route-level screens
+├── lib/           # Utilities and constants
+└── types/         # Shared TypeScript types
+```
+
+## Routes
+
+| Path | Feature |
+|------|---------|
+| `/login` | Basic auth sign-in |
+| `/sso` | SSO entry (when enabled) |
+| `/experiments` | Experiment list |
+| `/experiments/new` | Create draft experiment |
+| `/experiments/:id` | Experiment detail (tabs) |
+| `/applications` | Application list (admin) |
+| `/applications/:app/priorities` | Priority ordering |
+| `/applications/:app/pages` | Page manager |
+| `/applications/:app/logs` | Audit logs |
+| `/users` | User roles (admin) |
+| `/superadmins` | Superadmin management |
+| `/feedback` | Feedback inbox |
+| `/user-access/:user/:app/:role` | Deep-link role grant |
+| `/plugins` | Plugin placeholder |
+
+## Migration status
+
+See [`PARITY_CHECKLIST.md`](PARITY_CHECKLIST.md) for legacy route parity tracking.
+
+The legacy UI remains at `modules/ui/dist/` in the Wasabi JAR until cutover is verified.
