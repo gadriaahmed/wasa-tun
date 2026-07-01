@@ -26,14 +26,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { UserRoleEntry } from "@/types";
 
 export function Users() {
   const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [userId, setUserId] = useState("");
   const [appName, setAppName] = useState("");
-  const [role, setRole] = useState("READ");
+  const [role, setRole] = useState("READONLY");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["users-roles"],
@@ -72,10 +71,8 @@ export function Users() {
     );
   }
 
-  const rows = (data as UserRoleEntry[]).flatMap((entry) =>
-    entry.userID
-      ? [{ ...entry }]
-      : []
+  const rows = data.filter(
+    (entry) => entry.userID && entry.applicationName && entry.role
   );
 
   return (
@@ -156,7 +153,7 @@ export function Users() {
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
-              {["READ", "CREATE", "UPDATE", "DELETE", "ADMIN"].map((r) => (
+              {["READONLY", "READWRITE", "ADMIN"].map((r) => (
                 <option key={r} value={r}>
                   {r}
                 </option>

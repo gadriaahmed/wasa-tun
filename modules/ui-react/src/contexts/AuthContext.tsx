@@ -12,6 +12,7 @@ import {
   resetSessionTimers,
   setAuthTokens,
   setSessionHandlers,
+  buildAuthorizationHeader,
 } from "@/api/client";
 import {
   getPermissions,
@@ -102,6 +103,10 @@ function persistSession(
   window.localStorage.setItem(AUTH_STORAGE_KEYS.email, email);
   window.localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, accessToken);
   window.localStorage.setItem(AUTH_STORAGE_KEYS.tokenType, tokenType);
+  window.localStorage.setItem(
+    AUTH_STORAGE_KEYS.authorization,
+    buildAuthorizationHeader(tokenType, accessToken)
+  );
   window.localStorage.setItem(
     AUTH_STORAGE_KEYS.permissions,
     JSON.stringify(permissions)
@@ -198,16 +203,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [extendSession, signOut, state.isAuthenticated]);
 
   const signIn = useCallback(async (email: string, password: string) => {
-    const result = await login(email, password);
-    if (result.error) {
+    clearAuthStorage();
+
+    const username = email.trim();
+    if (!username || !password) {
+      throw new Error("Username and password are required");
+    }
+
+    const result = await login(username, password);
+    if (result.error || !result.access_token || !result.token_type) {
       throw new Error("Invalid credentials");
     }
 
-    // Token must be stored before getPermissions — the axios interceptor reads localStorage
-    setAuthTokens(email, result.access_token, result.token_type);
+    setAuthTokens(username, result.access_token, result.token_type);
 
     const permissionsResult = await getPermissions(
-      email,
+      username,
       result.token_type,
       result.access_token
     );
@@ -218,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const userRole = deriveUserRole(permissions, !!isSuperadmin);
 
     persistSession(
-      email,
+      username,
       result.access_token,
       result.token_type,
       permissions,
@@ -227,7 +238,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     setState({
-      email,
+      email: username,
       accessToken: result.access_token,
       tokenType: result.token_type,
       permissions,

@@ -186,10 +186,18 @@ export function ExperimentDetail() {
           />
         </TabsContent>
         <TabsContent value="exclusions">
-          <MutualExclusionTab experimentId={id} readOnly={readOnly} />
+          <MutualExclusionTab
+            experimentId={id}
+            applicationName={experiment.applicationName}
+            readOnly={readOnly}
+          />
         </TabsContent>
         <TabsContent value="pages">
-          <PagesTab experimentId={id} readOnly={readOnly} />
+          <PagesTab
+            experimentId={id}
+            applicationName={experiment.applicationName}
+            readOnly={readOnly}
+          />
         </TabsContent>
         <TabsContent value="api">
           <ApiCallsTab experiment={experiment} />

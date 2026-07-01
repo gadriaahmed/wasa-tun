@@ -1,19 +1,36 @@
 import { apiClient } from "@/api/client";
 import type { FeedbackEntry } from "@/types";
 
+function mapFeedbackEntry(raw: Record<string, unknown>): FeedbackEntry {
+  return {
+    id: String(raw.submitted ?? raw.id ?? ""),
+    username: String(raw.username ?? ""),
+    message: String(raw.comments ?? raw.message ?? ""),
+    rating: typeof raw.score === "number" ? raw.score : undefined,
+    created: raw.submitted ? String(raw.submitted) : undefined,
+  };
+}
+
 export async function sendFeedback(payload: {
-  message: string;
-  rating?: number;
-  username?: string;
+  comments: string;
+  score: number;
+  contactOkay?: boolean;
 }): Promise<void> {
-  await apiClient.post("/api/v1/feedback", payload);
+  const body: Record<string, unknown> = {
+    comments: payload.comments,
+    score: payload.score,
+  };
+  if (payload.contactOkay) {
+    body.contactOkay = true;
+  }
+  await apiClient.post("/api/v1/feedback", body);
 }
 
 export async function fetchFeedback(): Promise<FeedbackEntry[]> {
-  const res = await apiClient.get<{ feedback: FeedbackEntry[] }>(
+  const res = await apiClient.get<{ feedback: Record<string, unknown>[] }>(
     "/api/v1/feedback"
   );
-  return res.data.feedback ?? [];
+  return (res.data.feedback ?? []).map(mapFeedbackEntry);
 }
 
 export async function fetchExperimentStatistics(experimentId: string) {

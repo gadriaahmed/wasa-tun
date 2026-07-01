@@ -4,6 +4,11 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "clean:src-js": "find src -name '*.js' -delete && find src -name '*.js.map' -delete",
+    "clean:vite": "rm -rf node_modules/.vite",
+    "predev": "npm run clean:src-js && npm run clean:vite",
+    "prebuild": "npm run clean:src-js",
+    "pretest": "npm run clean:src-js",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",

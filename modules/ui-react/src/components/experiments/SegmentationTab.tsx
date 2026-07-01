@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { testSegmentationRule } from "@/api/applications";
-import { updateExperiment } from "@/api/experiments";
+import { updateExperimentRule } from "@/api/experiments";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,39 +22,53 @@ interface SegmentationTabProps {
   onUpdated: () => void;
 }
 
+function extractApiError(err: unknown): string {
+  const message = (
+    err as { response?: { data?: { error?: { message?: string } } } }
+  )?.response?.data?.error?.message;
+  return message ?? "Request failed";
+}
+
 export function SegmentationTab({
   experiment,
   readOnly = false,
   onUpdated,
 }: SegmentationTabProps) {
   const [rule, setRule] = useState(experiment.rule ?? "");
-  const [testContext, setTestContext] = useState('{"country":"US"}');
+  const [profileJson, setProfileJson] = useState('{"country":"US"}');
   const [testResult, setTestResult] = useState<string | null>(null);
 
+  useEffect(() => {
+    setRule(experiment.rule ?? "");
+  }, [experiment.rule]);
+
   const saveMutation = useMutation({
-    mutationFn: () =>
-      updateExperiment(experiment.id, {
-        ...experiment,
-        rule,
-      }),
+    mutationFn: () => updateExperimentRule(experiment.id, rule),
     onSuccess: () => {
       toast.success("Segmentation rule saved");
       onUpdated();
     },
-    onError: () => toast.error("Failed to save rule"),
+    onError: (err) => toast.error(extractApiError(err)),
   });
 
   const testMutation = useMutation({
-    mutationFn: () =>
-      testSegmentationRule(
+    mutationFn: () => {
+      const profile = JSON.parse(profileJson) as Record<string, unknown>;
+      return testSegmentationRule(
         experiment.applicationName,
         experimentName(experiment),
-        { context: JSON.parse(testContext) }
-      ),
-    onSuccess: (data) => {
-      setTestResult(JSON.stringify(data, null, 2));
+        profile
+      );
     },
-    onError: () => toast.error("Rule test failed"),
+    onSuccess: (data: { result?: boolean }) => {
+      const passed = data.result === true;
+      setTestResult(
+        passed
+          ? "Rule PASSES for these profile inputs."
+          : "Rule FAILS for these profile inputs."
+      );
+    },
+    onError: (err) => toast.error(extractApiError(err)),
   });
 
   return (
@@ -63,7 +77,9 @@ export function SegmentationTab({
         <CardHeader>
           <CardTitle>Segmentation rule</CardTitle>
           <CardDescription>
-            JSON rule evaluated when assigning users to this experiment.
+            Rule expression evaluated when assigning users (e.g.{" "}
+            <code className="text-xs">country == &quot;US&quot;</code>). Leave
+            empty for no segmentation.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -72,7 +88,7 @@ export function SegmentationTab({
             onChange={(e) => setRule(e.target.value)}
             rows={8}
             disabled={readOnly}
-            placeholder='{"country": "US"}'
+            placeholder='country == "US"'
           />
           {!readOnly && (
             <Button
@@ -88,28 +104,36 @@ export function SegmentationTab({
       <Card>
         <CardHeader>
           <CardTitle>Test segmentation</CardTitle>
+          <CardDescription>
+            Provide profile attributes to test whether the saved rule matches.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="space-y-2">
-            <Label htmlFor="test-context">Test context (JSON)</Label>
+            <Label htmlFor="test-profile">Profile (JSON object)</Label>
             <Textarea
-              id="test-context"
-              value={testContext}
-              onChange={(e) => setTestContext(e.target.value)}
+              id="test-profile"
+              value={profileJson}
+              onChange={(e) => setProfileJson(e.target.value)}
               rows={4}
             />
           </div>
           <Button
             variant="outline"
-            onClick={() => testMutation.mutate()}
+            onClick={() => {
+              try {
+                JSON.parse(profileJson);
+                testMutation.mutate();
+              } catch {
+                toast.error("Profile must be valid JSON");
+              }
+            }}
             disabled={testMutation.isPending}
           >
             Run test
           </Button>
           {testResult && (
-            <pre className="overflow-x-auto rounded-lg bg-muted p-3 text-xs">
-              {testResult}
-            </pre>
+            <p className="rounded-lg bg-muted p-3 text-sm">{testResult}</p>
           )}
         </CardContent>
       </Card>

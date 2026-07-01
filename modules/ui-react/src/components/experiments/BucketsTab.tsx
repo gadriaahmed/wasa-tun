@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { bucketAllocationPercent } from "@/lib/experiment-utils";
 import type { Bucket } from "@/types";
 
 interface BucketsTabProps {
@@ -140,7 +141,7 @@ export function BucketsTab({ experimentId, readOnly = false }: BucketsTabProps) 
                 <TableRow key={bucket.label}>
                   <TableCell>{bucket.label}</TableCell>
                   <TableCell>
-                    {bucket.allocationPercent ?? bucket.allocation ?? 0}
+                    {bucketAllocationPercent(bucket)}
                   </TableCell>
                   <TableCell>
                     {bucket.isControl || bucket.control ? "Yes" : "No"}
@@ -220,7 +221,13 @@ export function BucketsTab({ experimentId, readOnly = false }: BucketsTabProps) 
             </div>
             <Button
               disabled={!newLabel.trim() || createMutation.isPending}
-              onClick={() => createMutation.mutate()}
+              onClick={() => {
+                if (!/^[A-Za-z_$-][A-Za-z0-9_$-]*$/.test(newLabel.trim())) {
+                  toast.error("Bucket name must start with a letter, _, $, or hyphen and contain no spaces");
+                  return;
+                }
+                createMutation.mutate();
+              }}
             >
               Add bucket
             </Button>

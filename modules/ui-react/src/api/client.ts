@@ -1,12 +1,18 @@
-import axios from "axios";
+import axios, { type InternalAxiosRequestConfig } from "axios";
 import {
   AUTH_STORAGE_KEYS,
+  LEGACY_TOKEN_KEY,
   LOGIN_TIMEOUT_MS,
   LOGIN_TIMEOUT_WARNING_MS,
 } from "@/lib/constants";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "" : "http://localhost:8080");
+
+export interface AuthRequestConfig extends InternalAxiosRequestConfig {
+  skipAuth?: boolean;
+  authHeader?: string;
+}
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -43,8 +49,10 @@ function resetSessionTimers() {
   if (typeof window === "undefined") {
     return;
   }
-  const token = window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
-  if (!token) {
+  const authorization = window.localStorage.getItem(
+    AUTH_STORAGE_KEYS.authorization
+  );
+  if (!authorization) {
     return;
   }
 
@@ -70,21 +78,8 @@ export function clearAuthStorage() {
   Object.values(AUTH_STORAGE_KEYS).forEach((key) => {
     window.localStorage.removeItem(key);
   });
+  window.localStorage.removeItem(LEGACY_TOKEN_KEY);
   clearSessionTimers();
-}
-
-/** Persist bearer token so subsequent requests include Authorization. */
-export function setAuthTokens(
-  email: string,
-  accessToken: string,
-  tokenType: string
-) {
-  if (typeof window === "undefined") {
-    return;
-  }
-  window.localStorage.setItem(AUTH_STORAGE_KEYS.email, email);
-  window.localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, accessToken);
-  window.localStorage.setItem(AUTH_STORAGE_KEYS.tokenType, tokenType);
 }
 
 export function buildAuthorizationHeader(
@@ -94,8 +89,53 @@ export function buildAuthorizationHeader(
   return `${tokenType} ${accessToken}`;
 }
 
-export function setAuthHeader(
-  config: { headers?: unknown; url?: string },
+export function setAuthTokens(
+  email: string,
+  accessToken: string,
+  tokenType: string
+) {
+  if (typeof window === "undefined") {
+    return;
+  }
+  const authorization = buildAuthorizationHeader(tokenType, accessToken);
+  window.localStorage.setItem(AUTH_STORAGE_KEYS.email, email);
+  window.localStorage.setItem(AUTH_STORAGE_KEYS.accessToken, accessToken);
+  window.localStorage.setItem(AUTH_STORAGE_KEYS.tokenType, tokenType);
+  window.localStorage.setItem(AUTH_STORAGE_KEYS.authorization, authorization);
+  window.localStorage.removeItem(LEGACY_TOKEN_KEY);
+}
+
+export function getStoredAuthorization(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  const cached = window.localStorage.getItem(AUTH_STORAGE_KEYS.authorization);
+  if (cached) {
+    return cached;
+  }
+  const tokenType = window.localStorage.getItem(AUTH_STORAGE_KEYS.tokenType);
+  const accessToken = window.localStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
+  if (tokenType && accessToken) {
+    return buildAuthorizationHeader(tokenType, accessToken);
+  }
+  return null;
+}
+
+function resolveAuthorization(config: AuthRequestConfig): string | undefined {
+  if (config.authHeader) {
+    return config.authHeader;
+  }
+  const fromHeaders = (
+    config.headers as { Authorization?: string; get?: (k: string) => string }
+  )?.Authorization;
+  if (fromHeaders) {
+    return fromHeaders;
+  }
+  return getStoredAuthorization() ?? undefined;
+}
+
+function setAuthHeader(
+  config: AuthRequestConfig,
   authorization: string
 ) {
   const headers = config.headers as
@@ -106,28 +146,29 @@ export function setAuthHeader(
   } else if (headers) {
     headers.Authorization = authorization;
   } else {
-    config.headers = { Authorization: authorization };
+    config.headers = { Authorization: authorization } as typeof config.headers;
   }
 }
 
 apiClient.interceptors.request.use(
   (config) => {
-    const url = config.url ?? "";
-    const isLoginRequest = /\/authentication\/login/.test(url);
+    const authConfig = config as AuthRequestConfig;
+    const url = authConfig.url ?? "";
 
-    if (typeof window !== "undefined" && !isLoginRequest) {
-      const tokenType = window.localStorage.getItem(AUTH_STORAGE_KEYS.tokenType);
-      const accessToken = window.localStorage.getItem(
-        AUTH_STORAGE_KEYS.accessToken
-      );
-      if (tokenType && accessToken) {
-        setAuthHeader(config, buildAuthorizationHeader(tokenType, accessToken));
-        if (!/\/logout$/.test(url)) {
-          resetSessionTimers();
-        }
+    if (authConfig.skipAuth || /\/authentication\/login/.test(url)) {
+      return authConfig;
+    }
+
+    const authorization = resolveAuthorization(authConfig);
+
+    if (authorization) {
+      setAuthHeader(authConfig, authorization);
+      if (!/\/logout$/.test(url)) {
+        resetSessionTimers();
       }
     }
-    return config;
+
+    return authConfig;
   },
   (error) => Promise.reject(error)
 );

@@ -1,16 +1,10 @@
-import { apiClient, buildAuthorizationHeader } from "@/api/client";
+import {
+  apiClient,
+  buildAuthorizationHeader,
+  type AuthRequestConfig,
+} from "@/api/client";
 import { AUTHN_TYPE } from "@/lib/constants";
-import type { AuthLoginResponse, PermissionsResponse } from "@/types";
-
-export async function pingWithBasicAuth(
-  username: string,
-  password: string
-): Promise<void> {
-  const basic = btoa(`${username}:${password}`);
-  await apiClient.get("/api/v1/ping", {
-    headers: { Authorization: `Basic ${basic}` },
-  });
-}
+import type { AuthLoginResponse, PermissionsResponse, UserRoleEntry } from "@/types";
 
 export async function login(
   username: string,
@@ -22,11 +16,12 @@ export async function login(
     "/api/v1/authentication/login",
     body.toString(),
     {
+      skipAuth: true,
       headers: {
         Authorization: `Basic ${basic}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-    }
+    } as AuthRequestConfig
   );
   return res.data;
 }
@@ -48,13 +43,18 @@ export async function getPermissions(
   tokenType?: string,
   accessToken?: string
 ): Promise<PermissionsResponse> {
-  const headers =
+  const requestConfig =
     tokenType && accessToken
-      ? { Authorization: buildAuthorizationHeader(tokenType, accessToken) }
+      ? {
+          headers: {
+            Authorization: buildAuthorizationHeader(tokenType, accessToken),
+          },
+        }
       : undefined;
+
   const res = await apiClient.get<PermissionsResponse>(
     `/api/v1/authorization/users/${encodeURIComponent(userId)}/permissions`,
-    headers ? { headers } : undefined
+    requestConfig
   );
   return res.data;
 }
@@ -79,10 +79,20 @@ export async function getUsersForApplication(appName: string) {
   return res.data.roleList ?? [];
 }
 
-export async function getUsersRoles() {
-  const res = await apiClient.get<unknown[]>(
+export async function getUsersRoles(): Promise<UserRoleEntry[]> {
+  const res = await apiClient.get<Array<{ roleList?: UserRoleEntry[] }>>(
     "/api/v1/authorization/applications"
   );
+  return res.data.flatMap((entry) => entry.roleList ?? []);
+}
+
+export async function checkValidUser(email: string) {
+  const res = await apiClient.get<{
+    username?: string;
+    firstName?: string;
+    lastName?: string;
+    userEmail?: string;
+  }>(`/api/v1/authentication/users/${encodeURIComponent(email)}`);
   return res.data;
 }
 

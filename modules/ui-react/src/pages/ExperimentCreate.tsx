@@ -1,9 +1,13 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { createExperiment } from "@/api/experiments";
 import { fetchApplications } from "@/api/applications";
+import {
+  defaultExperimentEndTime,
+  defaultExperimentStartTime,
+} from "@/lib/experiment-utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,12 +21,33 @@ import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+function toDateInputValue(date: Date): string {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function parseDateInputValue(value: string): Date {
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 export function ExperimentCreate() {
   const navigate = useNavigate();
+  const defaultStart = useMemo(() => defaultExperimentStartTime(), []);
+  const defaultEnd = useMemo(
+    () => defaultExperimentEndTime(defaultStart),
+    [defaultStart]
+  );
+
   const [label, setLabel] = useState("");
   const [applicationName, setApplicationName] = useState("");
+  const [newApplicationName, setNewApplicationName] = useState("");
   const [description, setDescription] = useState("");
   const [samplingPercent, setSamplingPercent] = useState(100);
+  const [startDate, setStartDate] = useState(toDateInputValue(defaultStart));
+  const [endDate, setEndDate] = useState(toDateInputValue(defaultEnd));
   const [createNewApplication, setCreateNewApplication] = useState(false);
 
   const { data: applications = [] } = useQuery({
@@ -30,15 +55,20 @@ export function ExperimentCreate() {
     queryFn: fetchApplications,
   });
 
+  const resolvedApplicationName = createNewApplication
+    ? newApplicationName.trim()
+    : applicationName.trim();
+
   const mutation = useMutation({
     mutationFn: () =>
       createExperiment(
         {
           label,
-          applicationName,
+          applicationName: resolvedApplicationName,
           description,
           samplingPercent,
-          state: "DRAFT",
+          startTime: parseDateInputValue(startDate),
+          endTime: parseDateInputValue(endDate),
         },
         createNewApplication
       ),
@@ -46,13 +76,40 @@ export function ExperimentCreate() {
       toast.success("Experiment created");
       navigate(`/experiments/${exp.id}`);
     },
-    onError: () => toast.error("Failed to create experiment"),
+    onError: (err: unknown) => {
+      const message =
+        (err as { response?: { data?: { error?: { message?: string } } } })
+          ?.response?.data?.error?.message ?? "Failed to create experiment";
+      toast.error(message);
+    },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!label.trim() || !applicationName.trim()) {
-      toast.error("Name and application are required");
+    if (!label.trim()) {
+      toast.error("Experiment name is required");
+      return;
+    }
+    if (!/^[A-Za-z_$-][A-Za-z0-9_$-]*$/.test(label.trim())) {
+      toast.error(
+        "Experiment name must start with a letter, underscore, $, or hyphen and contain no spaces"
+      );
+      return;
+    }
+    if (!resolvedApplicationName) {
+      toast.error("Application is required");
+      return;
+    }
+    if (!description.trim()) {
+      toast.error("Description / hypothesis is required");
+      return;
+    }
+    if (parseDateInputValue(endDate) <= parseDateInputValue(startDate)) {
+      toast.error("End date must be after start date");
+      return;
+    }
+    if (samplingPercent <= 0 || samplingPercent > 100) {
+      toast.error("Sampling must be between 1 and 100");
       return;
     }
     mutation.mutate();
@@ -75,27 +132,45 @@ export function ExperimentCreate() {
               id="label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
+              placeholder="my_experiment_name"
+              pattern="^[A-Za-z_$-][A-Za-z0-9_$-]*$"
+              title="Start with a letter, _, $, or -; no spaces"
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="applicationName">Application</Label>
-            <Select
-              id="applicationName"
-              value={applicationName}
-              onChange={(e) => setApplicationName(e.target.value)}
-              required
-            >
-              <option value="" disabled>
-                Select application
-              </option>
-              {applications.map((app) => (
-                <option key={app.applicationName} value={app.applicationName}>
-                  {app.applicationName}
+
+          {!createNewApplication ? (
+            <div className="space-y-2">
+              <Label htmlFor="applicationName">Application</Label>
+              <Select
+                id="applicationName"
+                value={applicationName}
+                onChange={(e) => setApplicationName(e.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Select application
                 </option>
-              ))}
-            </Select>
-          </div>
+                {applications.map((app) => (
+                  <option key={app.applicationName} value={app.applicationName}>
+                    {app.applicationName}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="newApplicationName">New application name</Label>
+              <Input
+                id="newApplicationName"
+                value={newApplicationName}
+                onChange={(e) => setNewApplicationName(e.target.value)}
+                placeholder="MyNewApp"
+                required
+              />
+            </div>
+          )}
+
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -107,25 +182,54 @@ export function ExperimentCreate() {
               Create new application if it does not exist
             </Label>
           </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start date</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Description / hypothesis</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              placeholder="What are you testing?"
+              required
             />
           </div>
+
           <div className="space-y-2">
             <Label htmlFor="samplingPercent">Sampling %</Label>
             <Input
               id="samplingPercent"
               type="number"
-              min={0}
+              min={1}
               max={100}
+              step={1}
               value={samplingPercent}
               onChange={(e) => setSamplingPercent(Number(e.target.value))}
             />
           </div>
+
           <div className="flex gap-2">
             <Button type="submit" disabled={mutation.isPending}>
               {mutation.isPending ? "Creating..." : "Create draft"}

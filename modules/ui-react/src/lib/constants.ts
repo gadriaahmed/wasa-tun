@@ -18,6 +18,7 @@ export const LOGIN_TIMEOUT_WARNING_MS = 55 * 60 * 1000;
 export const LOGIN_TIMEOUT_MS = 60 * 60 * 1000;
 
 export const AUTH_STORAGE_KEYS = {
+  authorization: "auth_authorization",
   accessToken: "access_token",
   tokenType: "token_type",
   email: "auth_email",
@@ -26,6 +27,9 @@ export const AUTH_STORAGE_KEYS = {
   userRole: "auth_user_role",
   lastActivity: "auth_last_activity",
 } as const;
+
+/** Legacy key from early React scaffold — remove on login. */
+export const LEGACY_TOKEN_KEY = "token";
 
 export const AUTHN_TYPE = (import.meta.env.VITE_AUTHN_TYPE ?? "basic") as
   | "basic"

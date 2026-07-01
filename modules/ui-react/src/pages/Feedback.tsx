@@ -58,9 +58,9 @@ export function Feedback() {
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
-                <TableHead>Rating</TableHead>
-                <TableHead>Message</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead>Comments</TableHead>
+                <TableHead>Submitted</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -81,16 +81,15 @@ export function Feedback() {
 }
 
 export function FeedbackForm({ onSent }: { onSent?: () => void }) {
-  const { email } = useAuth();
-  const [message, setMessage] = useState("");
-  const [rating, setRating] = useState(5);
+  const [comments, setComments] = useState("");
+  const [score, setScore] = useState(8);
+  const [contactOkay, setContactOkay] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: () =>
-      sendFeedback({ message, rating, username: email ?? undefined }),
+    mutationFn: () => sendFeedback({ comments, score, contactOkay }),
     onSuccess: () => {
       toast.success("Feedback sent");
-      setMessage("");
+      setComments("");
       onSent?.();
     },
     onError: () => toast.error("Failed to send feedback"),
@@ -99,32 +98,40 @@ export function FeedbackForm({ onSent }: { onSent?: () => void }) {
   return (
     <div className="space-y-3">
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="feedback-message">
-          Message
+        <label className="text-sm font-medium" htmlFor="feedback-comments">
+          Comments
         </label>
         <textarea
-          id="feedback-message"
+          id="feedback-comments"
           className="flex min-h-[80px] w-full rounded-lg border px-3 py-2 text-sm"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          value={comments}
+          onChange={(e) => setComments(e.target.value)}
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium" htmlFor="feedback-rating">
-          Rating
+        <label className="text-sm font-medium" htmlFor="feedback-score">
+          Score (1–10)
         </label>
         <input
-          id="feedback-rating"
+          id="feedback-score"
           type="number"
           min={1}
-          max={5}
+          max={10}
           className="flex h-8 w-20 rounded-lg border px-2 text-sm"
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
+          value={score}
+          onChange={(e) => setScore(Number(e.target.value))}
         />
       </div>
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={contactOkay}
+          onChange={(e) => setContactOkay(e.target.checked)}
+        />
+        OK to contact me about this feedback
+      </label>
       <Button
-        disabled={!message.trim() || mutation.isPending}
+        disabled={!comments.trim() || mutation.isPending}
         onClick={() => mutation.mutate()}
       >
         Send feedback

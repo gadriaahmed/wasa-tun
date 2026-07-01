@@ -36,12 +36,21 @@ export function Login() {
       toast.success("Signed in successfully");
       navigate("/experiments", { replace: true });
     } catch (err: unknown) {
-      const status = (err as { response?: { status?: number } })?.response
-        ?.status;
-      if (status === 401 || status === 500) {
-        setError("Invalid credentials");
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string } };
+        message?: string;
+      };
+      const status = axiosErr?.response?.status;
+      console.error("Login failed", status, axiosErr?.response?.data);
+      if (status === 401) {
+        setError("Invalid username or password (try admin / admin)");
+      } else if (status === 500) {
+        setError("Server error — is the Wasabi backend running on :8080?");
       } else {
-        setError("Login failed");
+        setError(
+          axiosErr?.message ??
+            "Login failed — check the browser console for details"
+        );
       }
     } finally {
       setLoading(false);
@@ -59,7 +68,7 @@ export function Login() {
             Sign in to your account
           </CardTitle>
           <CardDescription>
-            Enter your admin credentials to access the Wasabi console.
+            Use your Wasabi username (e.g. <strong>admin</strong>, not your email).
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

@@ -103,7 +103,7 @@ export function ApplicationPriorities() {
   }, [data]);
 
   const saveMutation = useMutation({
-    mutationFn: () => updatePriorities(decodedApp, items),
+    mutationFn: () => updatePriorities(decodedApp, items.map((item) => item.id)),
     onSuccess: () => {
       toast.success("Priorities saved");
       void queryClient.invalidateQueries({ queryKey: ["priorities", decodedApp] });

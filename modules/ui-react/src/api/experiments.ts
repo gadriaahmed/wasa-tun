@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { buildNewExperimentPayload } from "@/lib/experiment-utils";
 import { getTimezoneParam } from "@/lib/timezone";
 import type {
   Experiment,
@@ -34,13 +35,16 @@ export async function fetchExperiment(id: string): Promise<Experiment> {
 }
 
 export async function createExperiment(
-  payload: Partial<Experiment>,
+  payload: Parameters<typeof buildNewExperimentPayload>[0],
   createNewApplication = false
 ): Promise<Experiment> {
   const url = createNewApplication
     ? "/api/v1/experiments/?createNewApplication=true"
     : "/api/v1/experiments";
-  const res = await apiClient.post<Experiment>(url, payload);
+  const res = await apiClient.post<Experiment>(
+    url,
+    buildNewExperimentPayload(payload)
+  );
   return res.data;
 }
 
@@ -57,6 +61,17 @@ export async function updateExperiment(
   return res.data;
 }
 
+/** Backend rejects full experiment objects on PUT — send only changed fields. */
+export async function updateExperimentRule(
+  id: string,
+  rule: string
+): Promise<Experiment> {
+  const res = await apiClient.put<Experiment>(`/api/v1/experiments/${id}`, {
+    rule,
+  });
+  return res.data;
+}
+
 export async function deleteExperiment(id: string): Promise<void> {
   await apiClient.delete(`/api/v1/experiments/${id}`);
 }
@@ -69,7 +84,7 @@ export async function changeExperimentState(
 }
 
 export async function fetchExperimentPages(id: string) {
-  const res = await apiClient.get<{ pages: unknown[] }>(
+  const res = await apiClient.get<{ pages?: unknown[] }>(
     `/api/v1/experiments/${id}/pages`
   );
   return res.data.pages ?? [];
@@ -77,7 +92,7 @@ export async function fetchExperimentPages(id: string) {
 
 export async function saveExperimentPages(
   id: string,
-  pages: unknown[]
+  pages: Array<{ name: string; allowNewAssignment: boolean }>
 ): Promise<void> {
   await apiClient.post(`/api/v1/experiments/${id}/pages`, { pages });
 }
@@ -115,12 +130,20 @@ export async function fetchMutualExclusions(
 
 export async function createMutualExclusion(
   experimentId: string,
-  payload: unknown
-): Promise<void> {
-  await apiClient.post(
+  targetExperimentIds: string[]
+): Promise<{
+  exclusions?: Array<{
+    status?: string;
+    reason?: string;
+    experimentID1?: string;
+    experimentID2?: string;
+  }>;
+}> {
+  const res = await apiClient.post(
     `/api/v1/experiments/${experimentId}/exclusions`,
-    payload
+    { experimentIDs: targetExperimentIds }
   );
+  return res.data;
 }
 
 export async function deleteMutualExclusion(
@@ -140,14 +163,14 @@ export async function fetchAllTags() {
 }
 
 export async function fetchFavorites() {
-  const res = await apiClient.get<{ favorites?: unknown[] }>(
+  const res = await apiClient.get<{ experimentIDs?: string[] }>(
     "/api/v1/favorites"
   );
   return res.data;
 }
 
 export async function addFavorite(experimentId: string): Promise<void> {
-  await apiClient.post("/api/v1/favorites", { experimentId });
+  await apiClient.post("/api/v1/favorites", { id: experimentId });
 }
 
 export async function removeFavorite(id: string): Promise<void> {

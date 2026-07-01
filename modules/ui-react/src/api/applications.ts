@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { getTimezoneParam } from "@/lib/timezone";
 import type { Application, PageInfo } from "@/types";
 
 export async function fetchApplications(): Promise<Application[]> {
@@ -44,12 +45,12 @@ export async function fetchPageExperiments(appName: string, pageName: string) {
 
 export async function testSegmentationRule(
   appName: string,
-  expName: string,
-  payload: unknown
+  expLabel: string,
+  profile: Record<string, unknown>
 ) {
   const res = await apiClient.post(
-    `/api/v1/assignments/applications/${encodeURIComponent(appName)}/experiments/${encodeURIComponent(expName)}/ruletest`,
-    payload
+    `/api/v1/assignments/applications/${encodeURIComponent(appName)}/experiments/${encodeURIComponent(expLabel)}/ruletest`,
+    { profile }
   );
   return res.data;
 }
@@ -63,11 +64,11 @@ export async function fetchPriorities(appName: string) {
 
 export async function updatePriorities(
   appName: string,
-  prioritizedExperiments: unknown[]
+  experimentIDs: string[]
 ): Promise<void> {
   await apiClient.put(
     `/api/v1/applications/${encodeURIComponent(appName)}/priorities`,
-    { prioritizedExperiments }
+    { experimentIDs }
   );
 }
 
@@ -77,7 +78,7 @@ export async function fetchLogs(
   filter = "",
   sort = ""
 ) {
-  const timezone = new Date().toString().match(/([-+][0-9]+)\s/)?.[1]?.replace("+", "%2B") ?? "+00";
+  const timezone = getTimezoneParam();
   const res = await apiClient.get(
     `/api/v1/logs/applications/${encodeURIComponent(appName)}?page=${page}&per_page=10&filter=${encodeURIComponent(filter)}&sort=${encodeURIComponent(sort)}&timezone=${timezone}`
   );

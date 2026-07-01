@@ -12,8 +12,8 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    // Prefer TypeScript sources over stale tsc emit artifacts in src/
-    extensions: [".tsx", ".ts", ".jsx", ".js"],
+    // Prefer TypeScript sources — never resolve stale emit artifacts in src/
+    extensions: [".tsx", ".ts", ".jsx"],
   },
   server: {
     port: 3000,
