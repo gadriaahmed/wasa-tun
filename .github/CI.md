@@ -43,7 +43,7 @@ make build-legacy-ui
    docker compose up -d
    ```
 
-   Services: Cassandra 3.11, PostgreSQL 16, keyspace init, schema migration (cassandra-migration 0.11), Wasabi on host **`:8088`** (maps to container `:8080`).
+   Services: Redis 7, PostgreSQL 16, Wasabi on host **`:8088`** (maps to container `:8080`).
 
 3. **Verify:**
 

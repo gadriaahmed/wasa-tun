@@ -10,7 +10,7 @@ alwaysApply: true
 - JDBC connection pooling uses HikariCP (`modules/database`).
 - DI and service wiring use Guice and Autumn service modules.
 - HTTP APIs use JAX-RS annotations (`@Path`, `@GET`, `@POST`) and Swagger annotations.
-- Persistence targets PostgreSQL (metadata/analytics) and Cassandra (DataStax); many flows are repository-driven.
+- Persistence targets PostgreSQL (metadata/analytics) and Redis (hot path); Cassandra remains available via `wasabi.repository.backend=cassandra`. Many flows are repository-driven.
 - Legacy frontend in `modules/ui` is AngularJS 1.x + Grunt + Karma/Jasmine.
 - New frontend in `modules/ui-react` is React 18 + TypeScript + Vite + React Router + React Query + Tailwind CSS (with shadcn/ui-style components).
 
@@ -36,7 +36,7 @@ alwaysApply: true
 - Java classes use PascalCase; prefer role-revealing suffixes already present:
   - API resources: `*Resource`
   - Guice modules: `*Module`
-  - repository implementations: `*Repository`, `Cassandra*Repository`
+  - repository implementations: `*Repository`, `Cassandra*Repository`, `Redis*Repository`
   - exceptions: `*Exception`
   - tests: unit `*Test`, integration `*IT`
 - AngularJS controllers use `*Ctrl` names and register with `.controller('NameCtrl', ...)`.

@@ -20,7 +20,7 @@ import com.intuit.wasabi.analytics.impl.AnalysisToolsImpl;
 import com.intuit.wasabi.analytics.impl.AnalyticsImpl;
 import com.intuit.wasabi.analytics.impl.ExperimentDetailsImpl;
 import com.intuit.wasabi.experiment.ExperimentsModule;
-import com.intuit.wasabi.repository.cassandra.CassandraRepositoryModule;
+import com.intuit.wasabi.repository.redis.RepositoryStorageModule;
 import com.intuit.wasabi.repository.database.DatabaseAnalyticsModule;
 import org.slf4j.Logger;
 
@@ -42,7 +42,7 @@ public class AnalyticsModule extends AbstractModule {
         LOGGER.debug("installing module: {}", AnalyticsModule.class.getSimpleName());
 
         install(new ExperimentsModule());
-        install(new CassandraRepositoryModule());
+        install(new RepositoryStorageModule());
         install(new DatabaseAnalyticsModule());
 
         bind(Analytics.class).to(AnalyticsImpl.class).in(SINGLETON);

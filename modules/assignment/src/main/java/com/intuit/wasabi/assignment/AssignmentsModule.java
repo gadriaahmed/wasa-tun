@@ -34,7 +34,7 @@ import com.intuit.wasabi.export.DatabaseExport;
 import com.intuit.wasabi.export.Envelope;
 import com.intuit.wasabi.export.WebExport;
 import com.intuit.wasabi.export.rest.impl.ExportModule;
-import com.intuit.wasabi.repository.cassandra.CassandraRepositoryModule;
+import com.intuit.wasabi.repository.redis.RepositoryStorageModule;
 import net.sf.ehcache.CacheManager;
 import org.slf4j.Logger;
 
@@ -80,7 +80,7 @@ public class AssignmentsModule extends AbstractModule {
         LOGGER.debug("installing module: {}", AssignmentsModule.class.getSimpleName());
 
         install(new ExportModule());
-        install(new CassandraRepositoryModule());
+        install(new RepositoryStorageModule());
         install(new ExperimentsModule());
 
         Properties properties = create(PROPERTY_NAME, AssignmentsModule.class);

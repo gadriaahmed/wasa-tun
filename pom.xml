@@ -57,6 +57,7 @@ http://www.w3.org/2001/XMLSchema-instance">
         <jackson.version>2.17.2</jackson.version>
         <hikaricp.version>5.1.0</hikaricp.version>
         <postgresql.version>42.7.4</postgresql.version>
+        <jedis.version>4.4.8</jedis.version>
         <lombok.version>1.18.42</lombok.version>
         <javax.annotation.version>1.3.2</javax.annotation.version>
         <timestamp>${maven.build.timestamp}</timestamp>
@@ -84,6 +85,11 @@ http://www.w3.org/2001/XMLSchema-instance">
         <database.maxConnections>30</database.maxConnections>
         <database.Args></database.Args>
         <database.jdbc.driver>org.postgresql.Driver</database.jdbc.driver>
+
+        <redis.host>localhost</redis.host>
+        <redis.port>6379</redis.port>
+        <redis.password></redis.password>
+        <wasabi.repository.backend>redis</wasabi.repository.backend>
 
         <cassandra.username></cassandra.username>
         <cassandra.password></cassandra.password>
@@ -244,7 +250,9 @@ http://www.w3.org/2001/XMLSchema-instance">
         <module>modules/user-directory</module>
         <module>modules/util</module>
         <module>modules/cassandra-datastax</module>
+        <module>modules/redis-client</module>
         <module>modules/repository-datastax</module>
+        <module>modules/repository-redis</module>
     </modules>
 
     <repositories>
@@ -315,6 +323,11 @@ http://www.w3.org/2001/XMLSchema-instance">
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>
