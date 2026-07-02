@@ -42,7 +42,7 @@ public class DBITransactionFactory extends TransactionFactory {
     public DBITransactionFactory(HikariConfig config, HealthCheckRegistry healthChecks) {
         super();
 
-        healthChecks.register("MySql", new PrivateMySqlHealthCheck(this));
+        healthChecks.register("PostgreSQL", new PrivateDatabaseHealthCheck(this));
 
         LOGGER.debug("Creating HikariDataSource");
         this.dataSource = new HikariDataSource(config);
@@ -63,10 +63,10 @@ public class DBITransactionFactory extends TransactionFactory {
         return new DBITransaction(dbi);
     }
 
-    private static class PrivateMySqlHealthCheck extends HealthCheck {
+    private static class PrivateDatabaseHealthCheck extends HealthCheck {
         private TransactionFactory transactionFactory;
 
-        public PrivateMySqlHealthCheck(TransactionFactory transactionFactory) {
+        public PrivateDatabaseHealthCheck(TransactionFactory transactionFactory) {
             this.transactionFactory = transactionFactory;
         }
 

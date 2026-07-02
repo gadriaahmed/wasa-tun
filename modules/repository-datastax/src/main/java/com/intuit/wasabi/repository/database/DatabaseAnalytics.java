@@ -16,6 +16,7 @@
 package com.intuit.wasabi.repository.database;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.googlecode.flyway.core.Flyway;
 import com.intuit.wasabi.analyticsobjects.Event;
 import com.intuit.wasabi.analyticsobjects.Parameters;
@@ -53,16 +54,17 @@ public class DatabaseAnalytics implements AnalyticsRepository {
      * @param flyway             Flyway
      */
     @Inject
-    public DatabaseAnalytics(TransactionFactory transactionFactory, Flyway flyway) {
+    public DatabaseAnalytics(TransactionFactory transactionFactory, Flyway flyway,
+                             @Named("database.migration.resource.path") String migrationResourcePath) {
         super();
 
         this.transactionFactory = transactionFactory;
         this.transaction = transactionFactory.newTransaction();
-        initialize(flyway);
+        initialize(flyway, migrationResourcePath);
     }
 
-    void initialize(Flyway flyway) {
-        flyway.setLocations("com/intuit/wasabi/repository/impl/mysql/migration");
+    void initialize(Flyway flyway, String migrationResourcePath) {
+        flyway.setLocations(migrationResourcePath);
         flyway.setDataSource(transactionFactory.getDataSource());
         flyway.migrate();
     }

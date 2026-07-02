@@ -15,24 +15,31 @@
  *******************************************************************************/
 package com.intuit.wasabi.database;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Provider;
+import com.google.inject.util.Modules;
 import com.zaxxer.hikari.HikariConfig;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class DatabaseModuleTest {
 
     @Test
     public void testProviderCP() {
-        Injector injector = Guice.createInjector(new DatabaseModule());
-        Provider<HikariConfig> provider = injector.getProvider(HikariConfig.class);
-        HikariConfig config = provider.get();
+        Injector injector = Guice.createInjector(Modules.override(new DatabaseModule()).with(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(TransactionFactory.class).toInstance(mock(TransactionFactory.class));
+            }
+        }));
+
+        HikariConfig config = injector.getInstance(HikariConfig.class);
 
         assertEquals(HikariConfig.class, config.getClass());
-        assert (config.getJdbcUrl().startsWith("jdbc:mysql"));
+        assert (config.getJdbcUrl().startsWith("jdbc:postgresql"));
         assertEquals("readwrite", config.getUsername());
         assertEquals("readwrite", config.getPassword());
         assertEquals(10, config.getMinimumIdle());

@@ -56,7 +56,7 @@ http://www.w3.org/2001/XMLSchema-instance">
         <maven.compiler.release>8</maven.compiler.release>
         <jackson.version>2.17.2</jackson.version>
         <hikaricp.version>5.1.0</hikaricp.version>
-        <mysql.connector.version>8.0.33</mysql.connector.version>
+        <postgresql.version>42.7.4</postgresql.version>
         <lombok.version>1.18.42</lombok.version>
         <javax.annotation.version>1.3.2</javax.annotation.version>
         <timestamp>${maven.build.timestamp}</timestamp>
@@ -74,15 +74,16 @@ http://www.w3.org/2001/XMLSchema-instance">
         <http.proxy.host>http://insert.your.proxy.host.here</http.proxy.host>
         <http.proxy.port>80</http.proxy.port>
 
-        <mysql.host>localhost</mysql.host>
-        <mysql.port>3306</mysql.port>
-        <mysql.dbName>wasabi</mysql.dbName>
-        <mysql.username>readwrite</mysql.username>
-        <mysql.password>readwrite</mysql.password>
-        <mysql.numPartitions>1</mysql.numPartitions>
-        <mysql.minConnections>10</mysql.minConnections>
-        <mysql.maxConnections>30</mysql.maxConnections>
-        <mysql.Args>verifyServerCertificate=false&amp;useSSL=false&amp;requireSSL=false&amp;autoReconnect=true&amp;autoReconnectForPools=true&amp;serverTimezone=UTC</mysql.Args>
+        <database.host>localhost</database.host>
+        <database.port>5432</database.port>
+        <database.dbName>wasabi</database.dbName>
+        <database.username>readwrite</database.username>
+        <database.password>readwrite</database.password>
+        <database.numPartitions>1</database.numPartitions>
+        <database.minConnections>10</database.minConnections>
+        <database.maxConnections>30</database.maxConnections>
+        <database.Args></database.Args>
+        <database.jdbc.driver>org.postgresql.Driver</database.jdbc.driver>
 
         <cassandra.username></cassandra.username>
         <cassandra.password></cassandra.password>
@@ -118,8 +119,8 @@ http://www.w3.org/2001/XMLSchema-instance">
         <!-- mutagen -->
         <cassandra.mutagen.root.resource.path>com/intuit/wasabi/repository/impl/cassandra/experiments/mutation
         </cassandra.mutagen.root.resource.path>
-        <mysql.mutagen.root.resource.path>com/intuit/wasabi/repository/impl/mysql/migration
-        </mysql.mutagen.root.resource.path>
+        <database.migration.resource.path>com/intuit/wasabi/repository/impl/postgres/migration
+        </database.migration.resource.path>
 
         <!-- FIXME: remove -->
         <assignment.decorator.service>http://decorator.example.com</assignment.decorator.service>
@@ -311,9 +312,9 @@ http://www.w3.org/2001/XMLSchema-instance">
                 <version>${hikaricp.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.mysql</groupId>
-                <artifactId>mysql-connector-j</artifactId>
-                <version>${mysql.connector.version}</version>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.projectlombok</groupId>

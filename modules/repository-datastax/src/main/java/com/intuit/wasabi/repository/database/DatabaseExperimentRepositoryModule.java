@@ -16,9 +16,9 @@
 package com.intuit.wasabi.repository.database;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 import com.googlecode.flyway.core.Flyway;
 import com.intuit.wasabi.database.TransactionFactory;
 import com.intuit.wasabi.experimentobjects.ExperimentValidator;
@@ -44,13 +44,13 @@ public class DatabaseExperimentRepositoryModule extends AbstractModule {
         LOGGER.debug("installed module: {}", DatabaseExperimentRepositoryModule.class.getSimpleName());
     }
 
-    @Inject
     @Provides
     @Singleton
     @DatabaseRepository
     protected ExperimentRepository provideExperimentRepository(TransactionFactory transactionFactory,
                                                                ExperimentValidator validator,
-                                                               Flyway flyway) {
-        return new DatabaseExperimentRepository(transactionFactory, validator, flyway);
+                                                               Flyway flyway,
+                                                               @Named("database.migration.resource.path") String migrationResourcePath) {
+        return new DatabaseExperimentRepository(transactionFactory, validator, flyway, migrationResourcePath);
     }
 }

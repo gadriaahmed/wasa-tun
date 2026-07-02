@@ -49,19 +49,25 @@ public class DatabaseModule extends AbstractModule {
         String port = getProperty("database.url.port", properties);
         String dbName = getProperty("database.url.dbname", properties);
         String dbArgs = getProperty("database.url.args", properties);
+        String driver = getProperty("database.jdbc.driver", properties);
 
         int partitions = parseInt(getProperty("database.pool.partitions", properties));
         int minPerPartition = parseInt(getProperty("database.pool.connections.min", properties));
         int maxPerPartition = parseInt(getProperty("database.pool.connections.max", properties));
 
+        String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + "/" + dbName;
+        if (dbArgs != null && !dbArgs.trim().isEmpty()) {
+            jdbcUrl = jdbcUrl + "?" + dbArgs;
+        }
+
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + dbName + "?" + dbArgs);
+        config.setJdbcUrl(jdbcUrl);
         config.setUsername(getProperty("database.user", properties));
         config.setPassword(getProperty("database.password", properties));
-        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        config.setDriverClassName(driver);
         config.setMinimumIdle(Math.max(1, partitions * minPerPartition));
         config.setMaximumPoolSize(Math.max(config.getMinimumIdle(), partitions * maxPerPartition));
-        config.setPoolName("wasabi-mysql");
+        config.setPoolName("wasabi-postgres");
 
         return config;
     }

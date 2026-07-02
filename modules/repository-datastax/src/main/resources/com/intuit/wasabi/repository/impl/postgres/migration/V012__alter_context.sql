@@ -1,0 +1,3 @@
+ALTER TABLE event_impression ALTER COLUMN context SET DEFAULT 'PROD';
+ALTER TABLE event_action ALTER COLUMN context SET DEFAULT 'PROD';
+ALTER TABLE experiment_rollup ALTER COLUMN context SET DEFAULT 'PROD';

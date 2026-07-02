@@ -43,7 +43,7 @@ make build-legacy-ui
    docker compose up -d
    ```
 
-   Services: Cassandra 3.11, MySQL 5.6, keyspace init, schema migration (cassandra-migration 0.11), Wasabi on host **`:8088`** (maps to container `:8080`).
+   Services: Cassandra 3.11, PostgreSQL 16, keyspace init, schema migration (cassandra-migration 0.11), Wasabi on host **`:8088`** (maps to container `:8080`).
 
 3. **Verify:**
 
@@ -69,7 +69,8 @@ make build-legacy-ui
 | Runtime | JDK 17+ (Temurin in CI and Docker) |
 | Bytecode | Java 8 (`maven.compiler.release=8`) |
 | Connection pool | BoneCP → HikariCP |
-| MySQL driver | `mysql-connector-j` 8.0.33 |
+| Metadata DB | **PostgreSQL 16** (replaces MySQL 5.6) |
+| JDBC driver | `postgresql` 42.7.x |
 | JSON | Jackson 2.17.2 (centralized) |
 | Tests | Surefire `--add-opens` for JDK 17+ module access |
 

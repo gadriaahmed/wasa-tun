@@ -50,6 +50,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DatabaseAnalyticsTest {
+    private static final String MIGRATION_PATH =
+            "com/intuit/wasabi/repository/impl/postgres/migration";
+
     TransactionFactory transactionFactory = Mockito.mock(TransactionFactory.class);
     Transaction transaction = Mockito.mock(Transaction.class);
     DataSource dataSource = Mockito.mock(DataSource.class);
@@ -60,17 +63,17 @@ public class DatabaseAnalyticsTest {
     public void setup() throws SQLException {
         when(transactionFactory.newTransaction()).thenReturn(transaction);
         when(transactionFactory.getDataSource()).thenReturn(dataSource);
-        databaseAnalytics = spy(new DatabaseAnalytics(transactionFactory, flyway));
+        databaseAnalytics = spy(new DatabaseAnalytics(transactionFactory, flyway, MIGRATION_PATH));
     }
 
     @Test
     public void initilizeTest() {
         Flyway mockedFlyway = Mockito.mock(Flyway.class);
-        databaseAnalytics.initialize(mockedFlyway);
+        databaseAnalytics.initialize(mockedFlyway, MIGRATION_PATH);
         verify(transactionFactory, atLeastOnce()).getDataSource();
-        verify(flyway, atLeastOnce()).setLocations("com/intuit/wasabi/repository/impl/mysql/migration");
-        verify(flyway, atLeastOnce()).setDataSource(dataSource);
-        verify(flyway, atLeastOnce()).migrate();
+        verify(mockedFlyway, atLeastOnce()).setLocations(MIGRATION_PATH);
+        verify(mockedFlyway, atLeastOnce()).setDataSource(dataSource);
+        verify(mockedFlyway, atLeastOnce()).migrate();
     }
 
     @Test(expected = RepositoryException.class)

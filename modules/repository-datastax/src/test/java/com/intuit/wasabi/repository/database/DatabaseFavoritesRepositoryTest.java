@@ -65,7 +65,7 @@ public class DatabaseFavoritesRepositoryTest {
         Mockito.doReturn(transaction).when(transactionFactory).newTransaction();
 
         // instantiate repository
-        databaseFavoritesRepository = new DatabaseFavoritesRepository(transactionFactory, flyway, "com/intuit/wasabi/repository/impl/mysql/migration");
+        databaseFavoritesRepository = new DatabaseFavoritesRepository(transactionFactory, flyway, "com/intuit/wasabi/repository/impl/postgres/migration");
     }
 
     @Test

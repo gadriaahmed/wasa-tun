@@ -179,7 +179,7 @@ public class DBITransaction implements Transaction {
             Exception inner = (Exception) ex.getCause();
 
             if (inner != null) {
-                throw remapMySQLException((SQLException) inner);
+                throw remapSQLException((SQLException) inner);
             }
 
             throw ex;
@@ -199,8 +199,8 @@ public class DBITransaction implements Transaction {
         //This operation reuses JDBC Connection object from the pool and then creates a new handle object.
         Handle handle = dbi.open();
 
-        // Force MySQL timezone to UTC
-        handle.execute("set time_zone = \"+0:00\"");
+        // Keep analytics timestamps in UTC
+        handle.execute("SET TIME ZONE 'UTC'");
 
         return handle;
     }
@@ -262,14 +262,25 @@ public class DBITransaction implements Transaction {
     }
 
     /**
-     * Re-map MySQL Exception
-     *
-     * @param ex
-     * @return
+     * Re-map JDBC SQL exceptions (PostgreSQL SQLState + legacy MySQL message patterns).
      */
-    private WasabiException remapMySQLException(SQLException ex) {
+    private WasabiException remapSQLException(SQLException ex) {
+        String sqlState = ex.getSQLState();
+        if ("23502".equals(sqlState)) {
+            return new ConstraintViolationException(
+                    ConstraintViolationException.Reason.NULL_CONSTRAINT_VIOLATION,
+                    null,
+                    new HashMap<String, Object>());
+        }
+        if ("23505".equals(sqlState)) {
+            return new ConstraintViolationException(
+                    ConstraintViolationException.Reason.UNIQUE_CONSTRAINT_VIOLATION,
+                    null,
+                    new HashMap<String, Object>());
+        }
+
         String msg = ex.getMessage();
-        final Matcher notNull = notNullPattern.matcher(msg);
+        final Matcher notNull = notNullPattern.matcher(msg != null ? msg : "");
 
         if (notNull.matches()) {
             return new ConstraintViolationException(
@@ -280,7 +291,7 @@ public class DBITransaction implements Transaction {
                     }});
         }
 
-        final Matcher duplicateEntry = duplicateEntryPattern.matcher(msg);
+        final Matcher duplicateEntry = duplicateEntryPattern.matcher(msg != null ? msg : "");
 
         if (duplicateEntry.matches()) {
             return new ConstraintViolationException(

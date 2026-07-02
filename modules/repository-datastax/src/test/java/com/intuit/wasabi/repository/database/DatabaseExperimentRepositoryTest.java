@@ -73,6 +73,9 @@ import static org.mockito.Mockito.when;
 
 public class DatabaseExperimentRepositoryTest {
 
+    private static final String MIGRATION_PATH =
+            "com/intuit/wasabi/repository/impl/postgres/migration";
+
     TransactionFactory transactionFactory = Mockito.mock(TransactionFactory.class);
     Transaction transaction = Mockito.mock(Transaction.class);
     DataSource dataSource = Mockito.mock(DataSource.class);
@@ -84,13 +87,13 @@ public class DatabaseExperimentRepositoryTest {
     public void setup() {
         when(transactionFactory.newTransaction()).thenReturn(transaction);
         when(transactionFactory.getDataSource()).thenReturn(dataSource);
-        repository = new DatabaseExperimentRepository(transactionFactory, experimentValidator, flyway);
+        repository = new DatabaseExperimentRepository(transactionFactory, experimentValidator, flyway, MIGRATION_PATH);
     }
 
     @Test
     public void testInitialize() {
         verify(transactionFactory, atLeastOnce()).getDataSource();
-        verify(flyway, atLeastOnce()).setLocations("com/intuit/wasabi/repository/impl/mysql/migration");
+        verify(flyway, atLeastOnce()).setLocations(MIGRATION_PATH);
         verify(flyway, atLeastOnce()).setDataSource(dataSource);
         verify(flyway, atLeastOnce()).migrate();
     }
@@ -231,7 +234,7 @@ public class DatabaseExperimentRepositoryTest {
     @Test
     public void testGetExperimentsWithListOfExperimentIDs() {
         DatabaseExperimentRepository repository = spy(new DatabaseExperimentRepository(transactionFactory,
-                experimentValidator, flyway));
+                experimentValidator, flyway, MIGRATION_PATH));
         List<Experiment.ID> list = Arrays.asList(Experiment.ID.newInstance());
         Experiment experiment = mock(Experiment.class);
         doReturn(experiment).when(repository).getExperiment(any(Experiment.ID.class));

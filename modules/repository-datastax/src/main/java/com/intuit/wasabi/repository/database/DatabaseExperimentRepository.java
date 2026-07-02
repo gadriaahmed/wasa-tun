@@ -19,6 +19,7 @@ import com.datastax.driver.core.Statement;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Table;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.googlecode.flyway.core.Flyway;
 import com.intuit.wasabi.database.Transaction;
 import com.intuit.wasabi.database.TransactionFactory;
@@ -59,16 +60,17 @@ public class DatabaseExperimentRepository implements ExperimentRepository {
 
     @Inject
     public DatabaseExperimentRepository(TransactionFactory transactionFactory, ExperimentValidator validator,
-                                        Flyway flyway) {
+                                        Flyway flyway,
+                                        @Named("database.migration.resource.path") String migrationResourcePath) {
         super();
 
         this.transactionFactory = transactionFactory;
         this.validator = validator;
-        initialize(flyway);
+        initialize(flyway, migrationResourcePath);
     }
 
-    private void initialize(Flyway flyway) {
-        flyway.setLocations("com/intuit/wasabi/repository/impl/mysql/migration");
+    private void initialize(Flyway flyway, String migrationResourcePath) {
+        flyway.setLocations(migrationResourcePath);
         flyway.setDataSource(transactionFactory.getDataSource());
         flyway.migrate();
     }
@@ -719,7 +721,7 @@ public class DatabaseExperimentRepository implements ExperimentRepository {
                 "select label, allocation_percent, is_control, " +
                         "   payload, description " +
                         "from bucket " +
-                        "where experiment_id=? order by id";
+                        "where experiment_id=? order by label";
 
 
         List buckets = newTransaction().select(

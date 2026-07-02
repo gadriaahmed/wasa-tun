@@ -1,0 +1,2 @@
+ALTER TABLE event_impression ADD COLUMN context VARCHAR(200) DEFAULT 'PROD';
+ALTER TABLE event_action ADD COLUMN context VARCHAR(200) DEFAULT 'PROD';

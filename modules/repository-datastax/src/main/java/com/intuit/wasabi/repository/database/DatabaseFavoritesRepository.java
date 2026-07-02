@@ -44,9 +44,9 @@ public class DatabaseFavoritesRepository implements FavoritesRepository {
      */
     @Inject
     public DatabaseFavoritesRepository(final TransactionFactory transactionFactory, final Flyway flyway,
-                                       final @Named("mysql.mutagen.root.resource.path") String mutagenRootResourcePath) {
+                                       final @Named("database.migration.resource.path") String migrationResourcePath) {
         this.transactionFactory = transactionFactory;
-        initialize(flyway, mutagenRootResourcePath);
+        initialize(flyway, migrationResourcePath);
     }
 
     /**
@@ -66,10 +66,11 @@ public class DatabaseFavoritesRepository implements FavoritesRepository {
     @Override
     public List<Experiment.ID> getFavorites(UserInfo.Username username) {
         // Remove favorites of now deleted experiments
-        String updateSQL = "UPDATE user_experiment_properties INNER JOIN experiment "
-                + "ON user_experiment_properties.experiment_id = experiment.id "
-                + "SET user_experiment_properties.is_favorite = 0 "
-                + "WHERE experiment.state = 'DELETED' AND user_experiment_properties.is_favorite = 1;";
+        String updateSQL = "UPDATE user_experiment_properties uep "
+                + "SET is_favorite = FALSE "
+                + "FROM experiment e "
+                + "WHERE uep.experiment_id = e.id "
+                + "AND e.state = 'DELETED' AND uep.is_favorite = TRUE";
         transactionFactory.newTransaction().update(updateSQL);
 
         String sql = "SELECT experiment_id FROM user_experiment_properties WHERE user_id = ? AND is_favorite = 1;";
@@ -121,8 +122,8 @@ public class DatabaseFavoritesRepository implements FavoritesRepository {
             throws DatabaseException {
         String sql = "INSERT INTO user_experiment_properties (user_id, experiment_id, is_favorite) "
                 + "VALUES (?, ?, ?) "
-                + "ON DUPLICATE KEY "
-                + "UPDATE is_favorite = VALUES(is_favorite);";
+                + "ON CONFLICT (user_id, experiment_id) "
+                + "DO UPDATE SET is_favorite = EXCLUDED.is_favorite";
         try {
             transactionFactory.newTransaction().insert(sql, username.toString(), experimentID, favorite);
         } catch (Exception e) {
