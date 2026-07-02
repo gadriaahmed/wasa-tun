@@ -198,9 +198,8 @@ module.exports = function (grunt) {
                 files: {
                     src: [
                         '<%= yeoman.dist %>/scripts/{,*/}*.js',
-                        '<%= yeoman.dist %>/styles/{,*/}*.css',
+                        '<%= yeoman.dist %>/styles/{,*/}*.css'
                         //'<%= yeoman.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
-                        '<%= yeoman.dist %>/styles/fonts/*'
                     ]
                 }
             }
@@ -354,7 +353,7 @@ module.exports = function (grunt) {
             },
             stylesbranding: {
                 expand: true,
-                cwd: '.tmp/styles',
+                cwd: '<%= yeoman.app %>/styles',
                 dest: '<%= yeoman.dist %>/styles/',
                 src: 'branding.css'
             },
@@ -555,7 +554,6 @@ module.exports = function (grunt) {
         'concat',
         'ngmin',
         'copy:dist',
-        'cdnify',
         'cssmin',
         'uglify',
         'rev',

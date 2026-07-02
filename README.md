@@ -1,5 +1,34 @@
 Wasabi A/B Testing service is an open source project that is no longer under active development or being supported
 
+## Quick start (this fork)
+
+**Prerequisites:** JDK 17+ (Temurin recommended), Maven 3, Docker, Node 18+, and frozen legacy UI at `modules/ui/dist/`.
+
+Build targets **Java 8 bytecode** for Jersey 1.x compatibility; the runtime uses **JDK 17+** (Docker images: `eclipse-temurin:17-jre`).
+
+```bash
+# One-time: build legacy UI if modules/ui/dist/ is missing
+make build-legacy-ui
+
+# Build backend, start Docker stack, and React dev server (:3000)
+make dev
+```
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:8088/api/v1/ping | API health |
+| http://localhost:8088/ | Legacy admin UI (`admin` / `admin`) |
+| http://localhost:3000/ | React admin UI (Vite dev, proxies API) |
+
+Verify stack: `make smoke`
+
+Stop everything: `make stop`. Skip React: `./bin/dev.sh --no-ui`. Details: [`.github/CI.md`](.github/CI.md).
+
+> **Note:** `bin/wasabi.sh` and `bin/container.sh` are archived under `bin/legacy/`.
+> Use `make dev` or `./bin/dev.sh` instead.
+
+---
+
 # Wasabi - A/B Testing Platform
 
 **Support:** [![Join the chat at https://gitter.im/intuit/wasabi](https://badges.gitter.im/intuit/wasabi.svg)](https://gitter.im/intuit/wasabi?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) <br/>

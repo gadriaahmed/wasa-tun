@@ -32,11 +32,9 @@ JAVA_OPTIONS="
   ${application.instrument}\
   ${application.monitor}\
   -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=\${LOG_DIR}/java_$$.hprof\
-  -XX:+UseConcMarkSweepGC -XX:+UseParNewGC\
-  -verbose:gc -Xloggc:\${LOG_DIR}/gc.log\
-  -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCApplicationStoppedTime\
-  -XX:+PrintGCApplicationConcurrentTime -XX:+PrintTenuringDistribution\
-  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=\${DEBUG_PORT}\
+  -XX:+UseG1GC\
+  -Xlog:gc*:file=\${LOG_DIR}/gc.log:time,uptime,level,tags\
+  -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:\${DEBUG_PORT}\
   -Djava.rmi.server.hostname=`hostname`\
   -Dcom.sun.management.jmxremote=true\
   -Dcom.sun.management.jmxremote.port=\${JMX_PORT}\
@@ -44,13 +42,16 @@ JAVA_OPTIONS="
   -Dcom.sun.management.jmxremote.authenticate=false\
   -Dlogback.configurationFile=\${HOME_DIR}/conf/logback.xml\
   -Djava.util.logging.config.file=\${HOME_DIR}/conf/logging.properties\
+  --add-opens java.base/java.lang=ALL-UNNAMED\
+  --add-opens java.base/java.lang.reflect=ALL-UNNAMED\
+  --add-opens java.base/java.util=ALL-UNNAMED\
   ${WASABI_CONFIGURATION}"
 
 # if JAVA_HOME is not set, set it based on OS
 if [ "$JAVA_HOME" = "" ]; then
   if [ -f /usr/libexec/java_home ]; then
     # OSX
-    export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+    export JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null || /usr/libexec/java_home)
   elif [ -d /usr/java/latest ]; then
     # Linux
     export JAVA_HOME=/usr/java/latest  

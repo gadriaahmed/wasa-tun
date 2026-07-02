@@ -17,7 +17,7 @@ package com.intuit.wasabi.database;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-import com.jolbox.bonecp.BoneCPConfig;
+import com.zaxxer.hikari.HikariConfig;
 import org.slf4j.Logger;
 
 import java.util.Properties;
@@ -42,57 +42,7 @@ public class DatabaseModule extends AbstractModule {
     }
 
     @Provides
-    BoneCPConfig provideCPConfig() {
-
-        BoneCPConfig config = new BoneCPConfig();
-
-        // Presuming MySQL, can set driver properties for timestamp handling
-        /*
-         * From http://dev.mysql.com/doc/refman/5.5/en/connector-j-reference-configuration-properties.html:
-		 *
-		 * noTimezoneConversionForTimeType
-		 * Don't convert TIME values using the server timezone if 'useTimezone'='true'
-		 * Default: false
-		 *
-		 * serverTimezone
-		 * Override detection/mapping of timezone. Used when timezone from 
-         * server doesn't map to Java timezone
-		 *
-		 * useGmtMillisForDatetimes
-		 * Convert between session timezone and GMT before creating Date and 
-         * Timestamp instances (value of "false" is legacy behavior, "true" 
-         * leads to more JDBC-compliant behavior.
-		 * Default: false
-		 *
-		 * useJDBCCompliantTimezoneShift
-		 * Should the driver use JDBC-compliant rules when converting 
-         * TIME/TIMESTAMP/DATETIME values' timezone information for those JDBC 
-         * arguments which take a java.util.Calendar argument? (Notice that 
-         * this option is exclusive of the "useTimezone=true" configuration 
-         * option.)
-		 * Default: false
-		 *
-		 * useLegacyDatetimeCode
-		 * Use code for DATE/TIME/DATETIME/TIMESTAMP handling in result sets 
-         * and statements that consistently handles timezone conversions from 
-         * client to server and back again, or use the legacy code for these 
-         * datatypes that has been in the driver for backwards-compatibility?
-		 * Default: true
-		 *
-		 * useSSPSCompatibleTimezoneShift
-		 * If migrating from an environment that was using server-side prepared 
-         * statements, and the configuration property 
-         * "useJDBCCompliantTimeZoneShift" set to "true", use compatible 
-         * behavior when not using server-side prepared statements when sending 
-         * TIMESTAMP values to the MySQL server.
-		 * Default: false
-		 *
-		 * useTimezone
-		 * Convert time/date types between client and server timezones 
-         * (true/false, defaults to 'false')?
-		 * Default: false
-		 */
-
+    HikariConfig provideHikariConfig() {
         Properties properties = create(PROPERTY_NAME, DatabaseModule.class);
 
         String host = getProperty("database.url.host", properties);
@@ -100,12 +50,18 @@ public class DatabaseModule extends AbstractModule {
         String dbName = getProperty("database.url.dbname", properties);
         String dbArgs = getProperty("database.url.args", properties);
 
+        int partitions = parseInt(getProperty("database.pool.partitions", properties));
+        int minPerPartition = parseInt(getProperty("database.pool.connections.min", properties));
+        int maxPerPartition = parseInt(getProperty("database.pool.connections.max", properties));
+
+        HikariConfig config = new HikariConfig();
         config.setJdbcUrl("jdbc:mysql://" + host + ":" + port + "/" + dbName + "?" + dbArgs);
         config.setUsername(getProperty("database.user", properties));
         config.setPassword(getProperty("database.password", properties));
-        config.setPartitionCount(parseInt(getProperty("database.pool.partitions", properties)));
-        config.setMinConnectionsPerPartition(parseInt(getProperty("database.pool.connections.min", properties)));
-        config.setMaxConnectionsPerPartition(parseInt(getProperty("database.pool.connections.max", properties)));
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        config.setMinimumIdle(Math.max(1, partitions * minPerPartition));
+        config.setMaximumPoolSize(Math.max(config.getMinimumIdle(), partitions * maxPerPartition));
+        config.setPoolName("wasabi-mysql");
 
         return config;
     }

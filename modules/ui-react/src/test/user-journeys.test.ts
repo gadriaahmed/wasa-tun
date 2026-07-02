@@ -6,7 +6,7 @@ import {
   toApiAllocationPercent,
 } from "@/lib/experiment-utils";
 
-const API_BASE = process.env.WASABI_API_URL ?? "http://localhost:8080";
+const API_BASE = process.env.WASABI_API_URL ?? "http://localhost:8088";
 const AUTH_HEADER = `Basic ${Buffer.from("admin:admin").toString("base64")}`;
 
 const client = axios.create({

@@ -6,7 +6,7 @@
   "scripts": {
     "clean:src-js": "find src -name '*.js' -delete && find src -name '*.js.map' -delete",
     "clean:vite": "rm -rf node_modules/.vite",
-    "predev": "npm run clean:src-js && npm run clean:vite",
+    "predev": "npm run clean:src-js && npm run clean:vite && rm -f vite.config.js vitest.config.js",
     "prebuild": "npm run clean:src-js",
     "pretest": "npm run clean:src-js",
     "dev": "vite",

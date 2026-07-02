@@ -22,12 +22,15 @@ nb-configuration.xml
 test-output
 cleanup-testng-out
 logs/
+.env
+.ui-react.pid
+.ui-react.log
 modules/ui/coverage
 modules/ui/results
 modules/ui/coverage2
 modules/ui/results2
-modules/ui/dist
 node_modules
+modules/ui/node_modules
 modules/ui/app/bower_components
 modules/ui/app/scripts/config.js
 modules/ui/dist.zip

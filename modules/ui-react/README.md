@@ -11,13 +11,12 @@ Modern admin console for Wasabi A/B testing, replacing the frozen AngularJS UI i
 
 ## Development
 
-**Prerequisites:** Node 18+, running Wasabi backend on `:8080`.
+**Prerequisites:** Node 18+, running Wasabi backend on `:8088` (local Docker Compose maps `8088→8080`).
+
+From the repo root you can start everything with `make dev`, or backend-only with `./bin/dev.sh --no-ui` then:
 
 ```bash
-cd modules/ui-react
-npm install
-cp .env.example .env
-npm run dev
+./bin/ui-react-dev.sh start   # or: cd modules/ui-react && npm run dev
 ```
 
 Open http://localhost:3000 — Vite proxies `/api/v1` to the backend.

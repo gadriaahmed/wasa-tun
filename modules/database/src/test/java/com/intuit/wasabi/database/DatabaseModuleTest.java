@@ -18,7 +18,7 @@ package com.intuit.wasabi.database;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provider;
-import com.jolbox.bonecp.BoneCPConfig;
+import com.zaxxer.hikari.HikariConfig;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -28,15 +28,15 @@ public class DatabaseModuleTest {
     @Test
     public void testProviderCP() {
         Injector injector = Guice.createInjector(new DatabaseModule());
-        Provider<BoneCPConfig> provider = injector.getProvider(BoneCPConfig.class);
+        Provider<HikariConfig> provider = injector.getProvider(HikariConfig.class);
+        HikariConfig config = provider.get();
 
-        assertEquals(BoneCPConfig.class, provider.get().getClass());
-        assert (provider.get().getJdbcUrl().startsWith("jdbc:mysql"));
-        assertEquals("readwrite", provider.get().getUser());
-        assertEquals("readwrite", provider.get().getPassword());
-        assertEquals(1, provider.get().getPartitionCount());
-        assertEquals(10, provider.get().getMinConnectionsPerPartition());
-        assertEquals(30, provider.get().getMaxConnectionsPerPartition());
+        assertEquals(HikariConfig.class, config.getClass());
+        assert (config.getJdbcUrl().startsWith("jdbc:mysql"));
+        assertEquals("readwrite", config.getUsername());
+        assertEquals("readwrite", config.getPassword());
+        assertEquals(10, config.getMinimumIdle());
+        assertEquals(30, config.getMaximumPoolSize());
     }
 
 }

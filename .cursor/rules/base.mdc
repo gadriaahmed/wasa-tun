@@ -6,7 +6,8 @@ alwaysApply: true
 # Wasabi Base Conventions
 
 ## Tech Stack
-- Backend is Java 8 with Maven multi-module builds (`pom.xml` root + `modules/*/pom.xml`).
+- Backend is Java (bytecode targets Java 8; build and run on JDK 17+) with Maven multi-module builds (`pom.xml` root + `modules/*/pom.xml`).
+- JDBC connection pooling uses HikariCP (`modules/database`).
 - DI and service wiring use Guice and Autumn service modules.
 - HTTP APIs use JAX-RS annotations (`@Path`, `@GET`, `@POST`) and Swagger annotations.
 - Persistence targets MySQL and Cassandra (DataStax); many flows are repository-driven.

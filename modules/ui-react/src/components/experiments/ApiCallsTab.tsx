@@ -13,7 +13,7 @@ interface ApiCallsTabProps {
 }
 
 const API_BASE =
-  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8080";
+  import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8088";
 
 export function ApiCallsTab({ experiment }: ApiCallsTabProps) {
   const name = experimentName(experiment);

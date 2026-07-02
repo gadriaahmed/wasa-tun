@@ -1,7 +1,5 @@
 # Run Wasabi locally with Cassandra and MySQL.
-# Prerequisite: build the app once so the wasabi image can be built:
-#   ./bin/build.sh -b true -p development
-# Then: docker compose up -d
+# Quick start: make dev   or   ./bin/dev.sh
 
 services:
   cassandra:
@@ -20,6 +18,7 @@ services:
 
   mysql:
     image: mysql:5.6
+    platform: linux/amd64
     container_name: wasabi-mysql
     environment:
       MYSQL_ROOT_PASSWORD: mypass
@@ -72,9 +71,9 @@ services:
     image: wasabi-main:latest
     container_name: wasabi-main
     environment:
-      WASABI_CONFIGURATION: "-Dcassandra.experiments.nodeHosts=cassandra -Dcassandra.events.nodeHosts=cassandra -Ddatabase.url.host=mysql"
+      WASABI_CONFIGURATION: "-DnodeHosts=cassandra -Ddatabase.url.host=mysql -Xms512m -Xmx512m"
     ports:
-      - "8080:8080"
+      - "8088:8080"
       - "8090:8090"
       - "8180:8180"
     depends_on:

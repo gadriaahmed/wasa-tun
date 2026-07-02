@@ -15,6 +15,9 @@
 # limitations under the License.
 ###############################################################################
 
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "${ROOT}"
+
 profile_default=development
 build_default=false
 test_default=false
@@ -37,7 +40,7 @@ EOF
 }
 
 fromPom() {
-  mvn ${WASABI_MAVEN} -f $1/pom.xml -P$2 help:evaluate -Dexpression=$3 -B \
+  "${ROOT}/bin/mvn.sh" ${WASABI_MAVEN} -f $1/pom.xml -P$2 help:evaluate -Dexpression=$3 -B \
     -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=error | \
     sed -n -e '/^\[.*\]/ !{ p; }'
 }
@@ -80,8 +83,10 @@ if [[ "${build}" = true || "${test}" = true || "${build_jar}" = true ]]; then
   [ ! -e ./modules/main/target/wasabi-main-*-SNAPSHOT-${profile}-all.jar ] && package=package
   [ "${test}" = true ] && tests="org.jacoco:jacoco-maven-plugin:prepare-agent findbugs:check test"
 
-  mvn ${WASABI_MAVEN} -P${profile} clean ${tests:--Dmaven.test.skip=true} ${package} javadoc:aggregate || \
-    usage "invalid: mvn ${WASABI_MAVEN} -P${profile} clean ${tests:--Dmaven.test.skip=true} ${package} javadoc:aggregate" 1
+  "${ROOT}/bin/mvn.sh" ${WASABI_MAVEN} -P${profile} clean ${tests:--Dmaven.test.skip=true} ${package} \
+    -Dmaven.javadoc.skip=true \
+    -pl '!modules/functional-test' || \
+    usage "invalid: mvn ${WASABI_MAVEN} -P${profile} clean ${tests:--Dmaven.test.skip=true} ${package} -pl '!modules/functional-test'" 1
 fi
 
 artifact=$(fromPom ./modules/${module} ${profile} project.artifactId)
@@ -118,23 +123,17 @@ cp ${home}/${id}-all.jar ${home}/${id}/lib
 
 chmod 755 ${home}/${id}/bin/run
 chmod 755 ${home}/${id}/entrypoint.sh
-sed -i '' -e "s/chpst -u [^:]*:[^ ]* //" ${home}/${id}/bin/run 2>/dev/null
-[ ! -e ./modules/ui/target/dist/scripts/wasabi.js ] && build_js=true
-
-if [[ "${build}" = true || "${build_js}" = true ]]; then
-  if [ "${WASABI_OS}" == "${WASABI_OSX}" ]; then
-    brew list node
-    if [[ $? -eq 1 ]]; then
-      echo "Node.js is not installed. Installing Node.js packages..."
-      brew install node
-      npm install -g yo grunt-cli bower grunt-contrib-compass
-      sudo gem install compass
-    fi
-  fi
-  (cd ./modules/ui && npm install && bower install && grunt build)
-fi
+sed -i '' -e "s/chpst -u [^:]*:[^ ]* //" ${home}/${id}/bin/run 2>/dev/null || \
+  sed -i -e "s/chpst -u [^:]*:[^ ]* //" ${home}/${id}/bin/run 2>/dev/null
 
 content=${home}/${id}/content/ui/dist
+
+if [ ! -f ./modules/ui/dist/index.html ]; then
+  echo "error: frozen legacy UI not found at modules/ui/dist/index.html"
+  echo "Run once: ./bin/build-legacy-ui.sh"
+  echo "Then commit modules/ui/dist/ if you want a reproducible build for others."
+  exit 1
+fi
 
 mkdir -p ${content}
 cp -R ./modules/ui/dist/* ${content}

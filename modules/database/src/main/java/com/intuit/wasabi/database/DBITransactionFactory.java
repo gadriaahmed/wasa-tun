@@ -20,8 +20,8 @@ import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.google.inject.Inject;
 import com.intuit.wasabi.database.impl.DBITransaction;
-import com.jolbox.bonecp.BoneCPConfig;
-import com.jolbox.bonecp.BoneCPDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.slf4j.Logger;
 
@@ -39,17 +39,15 @@ public class DBITransactionFactory extends TransactionFactory {
     private DataSource dataSource;
 
     @Inject
-    public DBITransactionFactory(BoneCPConfig config, HealthCheckRegistry healthChecks) {
+    public DBITransactionFactory(HikariConfig config, HealthCheckRegistry healthChecks) {
         super();
 
-        // Register for health check
         healthChecks.register("MySql", new PrivateMySqlHealthCheck(this));
 
-        LOGGER.debug("Creating BoneCPDataSource");
-        this.dataSource = new BoneCPDataSource(config);
+        LOGGER.debug("Creating HikariDataSource");
+        this.dataSource = new HikariDataSource(config);
         this.dbi = new DBI(dataSource);
 
-        // Register JDBI argument factories
         dbi.registerArgumentFactory(new UUIDArgumentFactory());
         dbi.registerArgumentFactory(new ExperimentIDArgumentFactory());
         dbi.registerArgumentFactory(new BucketLabelArgumentFactory());
@@ -79,15 +77,11 @@ public class DBITransactionFactory extends TransactionFactory {
             String msg = "";
 
             try {
-                // "SELECT 1" means SQL connection validation of db
                 trans.select("SELECT 1");
                 res = true;
             } catch (Exception ex) {
                 LOGGER.error("Unable to do check", ex);
                 msg = ex.getMessage();
-            } finally {
-                //No need to close here as it (handle) gets closed as part of select() operation.
-                //((DBITransaction) trans).close();
             }
 
             return res ? Result.healthy() : Result.unhealthy(msg);

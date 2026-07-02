@@ -1,7 +1,8 @@
-FROM eclipse-temurin:8-jre-alpine
+FROM eclipse-temurin:17-jre
 
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
-ADD https://oss.sonatype.org/content/repositories/public/com/builtamont/cassandra-migration/0.9/cassandra-migration-0.9-jar-with-dependencies.jar /wasabi/cassandra-migration.jar
+ADD https://oss.sonatype.org/content/repositories/public/com/builtamont/cassandra-migration/0.11/cassandra-migration-0.11-jar-with-dependencies.jar /wasabi/cassandra-migration.jar
 ADD modules/repository-datastax/src/main/resources/com/intuit/wasabi/repository/impl/cassandra/migration /wasabi/mutation
 ADD bin/docker/schema_migration.sh /wasabi/migration.sh
 

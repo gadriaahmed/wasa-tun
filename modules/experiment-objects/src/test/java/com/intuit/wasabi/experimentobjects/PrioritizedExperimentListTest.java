@@ -17,11 +17,11 @@ package com.intuit.wasabi.experimentobjects;
 
 import org.junit.Test;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Test for the {@link PrioritizedExperimentList}
@@ -30,38 +30,19 @@ import static org.junit.Assert.assertEquals;
  */
 public class PrioritizedExperimentListTest {
 
-    static final Field field;
-
-    static {
-        try {
-            field = ArrayList.class.getDeclaredField("elementData");
-            field.setAccessible(true);
-        } catch (Exception e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <E> int getArrayListCapacity(List<E> arrayList) {
-        try {
-            final E[] elementData = (E[]) field.get(arrayList);
-            return elementData.length;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     @Test
     public void testConstructor() {
         PrioritizedExperimentList prioList = new PrioritizedExperimentList(42);
-        assertEquals(42, getArrayListCapacity(prioList.getPrioritizedExperiments()));
+        assertTrue(prioList.getPrioritizedExperiments().isEmpty());
+
+        for (int i = 0; i < 42; i++) {
+            prioList.addPrioritizedExperiment(new PrioritizedExperiment());
+        }
+        assertEquals(42, prioList.getPrioritizedExperiments().size());
 
         List<PrioritizedExperiment> emptyList = new ArrayList<>();
         prioList.setPrioritizedExperiments(emptyList);
-        assertEquals(0, getArrayListCapacity(prioList.getPrioritizedExperiments()));
-
+        assertTrue(prioList.getPrioritizedExperiments().isEmpty());
     }
-
 
 }

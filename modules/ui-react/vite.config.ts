@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "react-smooth": path.resolve(__dirname, "node_modules/react-smooth/es6/index.js"),
     },
     // Prefer TypeScript sources — never resolve stale emit artifacts in src/
     extensions: [".tsx", ".ts", ".jsx"],
@@ -20,7 +21,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api/v1": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8088",
         changeOrigin: true,
       },
     },

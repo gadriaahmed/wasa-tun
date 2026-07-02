@@ -45,7 +45,7 @@ export function Login() {
       if (status === 401) {
         setError("Invalid username or password (try admin / admin)");
       } else if (status === 500) {
-        setError("Server error — is the Wasabi backend running on :8080?");
+        setError("Server error — is the Wasabi backend running on :8088?");
       } else {
         setError(
           axiosErr?.message ??

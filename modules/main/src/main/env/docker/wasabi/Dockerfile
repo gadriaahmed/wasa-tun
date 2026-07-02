@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###############################################################################
-# Modern Java 8 JRE base (Eclipse Temurin); no deprecated Oracle JDK.
-FROM eclipse-temurin:8-jre
+# Eclipse Temurin 17 JRE (bytecode targets Java 8 for Jersey 1.x).
+FROM eclipse-temurin:17-jre
 
 ENV WASABI_MODULE wasabi-main
 ENV WASABI_UI_MODULE wasabi-ui-main

@@ -1,0 +1,172 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Wasabi SDK Test</title><style>* { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: sans-serif; background: #f4f4f4; padding: 30px; color: #333; }
+    h1 { margin-bottom: 20px; font-size: 24px; }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .card h2 { font-size: 16px; margin-bottom: 12px; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .badge.control   { background: #dbeafe; color: #1d4ed8; }
+    .badge.treatment { background: #dcfce7; color: #15803d; }
+    .badge.unknown   { background: #f3f4f6; color: #6b7280; }
+
+    .info-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 14px; }
+    .label { color: #888; width: 120px; flex-shrink: 0; }
+    .value { font-weight: 500; word-break: break-all; }
+
+    button {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      transition: opacity 0.2s;
+    }
+    button:hover { opacity: 0.85; }
+
+    #btn-buy    { background: #2563eb; color: white; }
+    #btn-reset  { background: #e5e7eb; color: #374151; font-size: 13px; padding: 6px 14px; }
+
+    .log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 6px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 13px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .log .entry { margin-bottom: 6px; line-height: 1.5; }
+    .log .entry.success { color: #4ade80; }
+    .log .entry.error   { color: #f87171; }
+    .log .entry.info    { color: #93c5fd; }
+    .log .entry.action  { color: #fbbf24; }
+
+    .status-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      display: inline-block; margin-right: 6px;
+    }
+    .dot-green  { background: #22c55e; }
+    .dot-red    { background: #ef4444; }
+    .dot-yellow { background: #eab308; }</style><body><h1>🧪 Wasabi SDK — E2E Test Page</h1><!-- User Info --><div class="card"><h2>User Info</h2><div class="info-row"><span class="label">User ID</span> <span class="value" id="user-id">—</span></div><div class="info-row"><span class="label">Source</span> <span class="value" id="user-source">—</span></div><button id="btn-reset" onclick="resetUser()">🔄 Reset User (new cookie)</button></div><!-- Experiment --><div class="card"><h2>Experiment: BuyButton</h2><div class="info-row"><span class="label">Status</span> <span id="exp-status"><span class="status-dot dot-yellow"></span>Loading...</span></div><div class="info-row"><span class="label">Bucket</span> <span id="bucket-badge"><span class="badge unknown">—</span></span></div><div class="info-row"><span class="label">Raw response</span> <span class="value" id="raw-response">—</span></div></div><!-- Actions --><div class="card"><h2>Actions</h2><div style="display:flex; gap:12px; flex-wrap:wrap"><button id="btn-buy" onclick="trackBuy()">🛒 Buy Now (track BuyClicked)</button> <button style="background:#7c3aed;color:white" onclick="trackImpression()">👁 Record Impression</button> <button style="background:#0891b2;color:white" onclick="reAssign()">🔁 Re-assign</button></div></div><!-- Log --><div class="card"><h2>API Log <button id="btn-reset" style="margin-left:10px" onclick="clearLog()">Clear</button></h2><div class="log" id="log"></div></div><script src="/scripts/bfaaff9d.wasabi.js"></script><script>// ─── Config ───────────────────────────────────────────────────────────────
+    WASABI.setOptions({
+      applicationName: 'TestApp',
+      experimentName:  'BuyButton',
+      protocol:        'http',
+      host:            'localhost:8080'
+    });
+
+    // ─── Logging ──────────────────────────────────────────────────────────────
+    function log(msg, type) {
+      var el = document.getElementById('log');
+      var entry = document.createElement('div');
+      entry.className = 'entry ' + (type || 'info');
+      entry.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+      el.appendChild(entry);
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+    }
+
+    // ─── User ─────────────────────────────────────────────────────────────────
+    function getOrCreateUserId() {
+      var existing = getCookie('wasabi_uid');
+      if (existing) return { id: existing, source: 'cookie (returning user)' };
+      return { id: null, source: 'will be created by SDK' };
+    }
+
+    function getCookie(name) {
+      var value = '; ' + document.cookie;
+      var parts = value.split('; ' + name + '=');
+      if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+      return null;
+    }
+
+    function resetUser() {
+      document.cookie = 'wasabi_uid=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      log('Cookie cleared — reloading page...', 'info');
+      setTimeout(() => location.reload(), 800);
+    }
+
+    function updateUserInfo() {
+      var uid = getCookie('wasabi_uid');
+      document.getElementById('user-id').textContent = uid || '(not set yet)';
+      document.getElementById('user-source').textContent = uid ? 'cookie (returning user)' : 'new user — SDK will generate';
+    }
+
+    // ─── Experiment ───────────────────────────────────────────────────────────
+    function renderBucket(bucket) {
+      var badge = document.getElementById('bucket-badge');
+      var cls = bucket === 'control' ? 'control' : bucket === 'treatment' ? 'treatment' : 'unknown';
+      badge.innerHTML = '<span class="badge ' + cls + '">' + (bucket || 'null (not assigned)') + '</span>';
+    }
+
+    function assign() {
+      log('Calling getAssignment...', 'info');
+      document.getElementById('exp-status').innerHTML = '<span class="status-dot dot-yellow"></span>Loading...';
+
+      WASABI.getAssignment()
+        .then(function(response) {
+          var uid = getCookie('wasabi_uid');
+          document.getElementById('user-id').textContent = uid || '—';
+          document.getElementById('user-source').textContent = uid ? 'cookie' : '—';
+
+          var bucket = response && response.assignment;
+          var status = response && response.status;
+
+          document.getElementById('exp-status').innerHTML =
+            '<span class="status-dot dot-green"></span>' + (status || 'OK');
+          document.getElementById('raw-response').textContent = JSON.stringify(response);
+
+          renderBucket(bucket);
+          log('Assigned to bucket: ' + bucket + ' (status: ' + status + ')', 'success');
+        })
+        .catch(function(err) {
+          document.getElementById('exp-status').innerHTML =
+            '<span class="status-dot dot-red"></span>Error';
+          log('getAssignment error: ' + err.message, 'error');
+        });
+    }
+
+    function reAssign() {
+      log('Forcing re-assignment (cache cleared)...', 'info');
+      // Clear SDK cache by removing cookie and reloading
+      assign();
+    }
+
+    // ─── Actions ──────────────────────────────────────────────────────────────
+    function trackBuy() {
+      log('Tracking BuyClicked...', 'action');
+      WASABI.postAction('BuyClicked', null, {})
+        .then(function() { log('BuyClicked recorded ✓', 'success'); })
+        .catch(function(err) { log('postAction error: ' + err.message, 'error'); });
+    }
+
+    function trackImpression() {
+      log('Recording IMPRESSION...', 'action');
+      WASABI.postImpression({})
+        .then(function() { log('IMPRESSION recorded ✓', 'success'); })
+        .catch(function(err) { log('postImpression error: ' + err.message, 'error'); });
+    }
+
+    // ─── Init ─────────────────────────────────────────────────────────────────
+    updateUserInfo();
+    log('SDK initialized for app: TestApp / experiment: BuyButton', 'info');
+    assign();</script>

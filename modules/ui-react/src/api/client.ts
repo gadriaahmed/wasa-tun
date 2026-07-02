@@ -6,8 +6,11 @@ import {
   LOGIN_TIMEOUT_WARNING_MS,
 } from "@/lib/constants";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? "" : "http://localhost:8080");
+// In dev, always use same-origin requests so Vite proxies /api/v1 → Wasabi (:8088).
+// Set VITE_API_URL only for production static builds.
+const API_BASE_URL = import.meta.env.DEV
+  ? ""
+  : (import.meta.env.VITE_API_URL ?? "http://localhost:8088");
 
 export interface AuthRequestConfig extends InternalAxiosRequestConfig {
   skipAuth?: boolean;
